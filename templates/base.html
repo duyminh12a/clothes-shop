@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Nếp Form — Xưởng áo của bạn{% endblock %}</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nep: {
+              cream: '#F5F0E8',
+              creamLight: '#FAF7F2',
+              green: '#2D3A2E',
+              greenMuted: '#647746',
+              greenLight: '#E8EFE3',
+              dark: '#1A1A1A',
+              darkSoft: '#2B2B2B',
+              gray: '#7A7A7A',
+              grayLight: '#E5E1D8',
+              gold: '#C4A35A',
+              goldLight: '#FBF5E8'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    [x-cloak] { display: none !important; }
+    body {
+      background-color: #F5F0E8;
+      color: #1A1A1A;
+    }
+    ::selection {
+      background-color: #2D3A2E;
+      color: #F5F0E8;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-screen font-sans antialiased text-nep-dark" x-data="{ sizeModalOpen: false, searchOpen: false }" @open-size-modal.window="sizeModalOpen = true">
+
+  <!-- 1. Top Announcement Bar -->
+  <div class="bg-nep-dark text-nep-cream text-xs py-2 px-4 border-b border-nep-darkSoft">
+    <div class="max-w-7xl mx-auto flex justify-between items-center tracking-wide">
+      <span>Một nếp áo. Một nét riêng.</span>
+      <a href="{% url 'products:catalog' %}" class="hover:underline flex items-center gap-1 opacity-90 hover:opacity-100 transition">
+        Trải nghiệm local <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- 2. Main Navigation Header -->
+  <header class="bg-nep-cream border-b border-nep-grayLight/80 sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <a href="{% url 'core:home' %}" class="flex items-center gap-2 group">
+        <span class="text-3xl font-serif font-bold tracking-tight text-nep-dark group-hover:text-nep-green transition">nếp form.</span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+        <a href="{% url 'studio:index' %}" class="flex items-center gap-1 text-nep-green font-semibold hover:opacity-80 transition">
+          Tự thiết kế áo <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+        </a>
+        <a href="{% url 'products:catalog' %}" class="text-nep-dark/80 hover:text-nep-dark transition">Mẫu có sẵn</a>
+        <a href="{% url 'accounts:my_designs' %}" class="text-nep-dark/80 hover:text-nep-dark transition">Thiết kế của tôi</a>
+        <a href="{% url 'loyalty:club' %}" class="text-nep-dark/80 hover:text-nep-dark transition flex items-center gap-1">
+          Nếp Club <span class="bg-nep-gold/20 text-nep-green text-[10px] font-bold px-1.5 py-0.5 rounded-full">VIP</span>
+        </a>
+        <a href="{% url 'core:about' %}" class="text-nep-dark/80 hover:text-nep-dark transition">Về Nếp</a>
+      </nav>
+
+      <!-- Action Icons -->
+      <div class="flex items-center space-x-4">
+        <!-- Size Guide Trigger Button -->
+        <button type="button" @click="sizeModalOpen = true" title="Tìm size áo phù hợp" class="hidden sm:flex items-center gap-1.5 text-xs font-medium bg-nep-creamLight hover:bg-nep-grayLight border border-nep-grayLight px-3 py-1.5 rounded-full transition">
+          <i data-lucide="ruler" class="w-3.5 h-3.5 text-nep-greenMuted"></i>
+          <span>Tìm size</span>
+        </button>
+
+        <!-- Search button -->
+        <button type="button" @click="searchOpen = !searchOpen" class="p-2 text-nep-dark/80 hover:text-nep-dark transition rounded-full hover:bg-nep-grayLight/40" title="Tìm kiếm">
+          <i data-lucide="search" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Account -->
+        {% if user.is_authenticated %}
+          <div class="relative" x-data="{ userMenu: false }">
+            <button @click="userMenu = !userMenu" class="flex items-center gap-2 p-1.5 rounded-full hover:bg-nep-grayLight/50 transition">
+              <div class="w-8 h-8 rounded-full bg-nep-green text-nep-cream flex items-center justify-center font-bold text-xs uppercase">
+                {{ user.username|slice:":1" }}
+              </div>
+            </button>
+            <div x-show="userMenu" @click.away="userMenu = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white border border-nep-grayLight rounded-xl shadow-lg py-1 z-50 text-sm">
+              <div class="px-4 py-2 border-b border-gray-100 font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                {{ user.get_full_name|default:user.username }}
+              </div>
+              <a href="{% url 'accounts:my_designs' %}" class="block px-4 py-2 text-nep-dark hover:bg-nep-creamLight">Thiết kế của tôi</a>
+              <a href="{% url 'orders:my_orders' %}" class="block px-4 py-2 text-nep-dark hover:bg-nep-creamLight">Đơn hàng đã đặt</a>
+              <a href="{% url 'loyalty:club' %}" class="block px-4 py-2 text-nep-dark hover:bg-nep-creamLight flex items-center justify-between">
+                <span>Nếp Club</span>
+                <span class="text-xs font-bold text-nep-gold">{{ user.points_balance }} đ</span>
+              </a>
+              {% if user.is_staff %}
+                <a href="/admin/" target="_blank" class="block px-4 py-2 text-nep-green font-medium hover:bg-nep-creamLight border-t border-gray-100">Trang Quản Trị</a>
+              {% endif %}
+              <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-red-600 hover:bg-red-50 border-t border-gray-100">Đăng xuất</a>
+            </div>
+          </div>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="p-2 text-nep-dark/80 hover:text-nep-dark transition rounded-full hover:bg-nep-grayLight/40" title="Đăng nhập">
+            <i data-lucide="user" class="w-5 h-5"></i>
+          </a>
+        {% endif %}
+
+        <!-- Cart Bag -->
+        <a href="{% url 'cart:detail' %}" class="relative p-2 text-nep-dark/80 hover:text-nep-dark transition rounded-full hover:bg-nep-grayLight/40" title="Giỏ hàng">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          {% if CART_ITEMS_COUNT > 0 %}
+            <span class="absolute -top-1 -right-1 bg-nep-green text-nep-cream text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+              {{ CART_ITEMS_COUNT }}
+            </span>
+          {% endif %}
+        </a>
+      </div>
+    </div>
+
+    <!-- Search Overlay -->
+    <div x-show="searchOpen" x-cloak class="border-t border-nep-grayLight/80 bg-nep-creamLight px-4 py-3">
+      <form action="{% url 'products:catalog' %}" method="GET" class="max-w-3xl mx-auto flex items-center gap-2">
+        <i data-lucide="search" class="w-4 h-4 text-nep-gray"></i>
+        <input type="text" name="q" placeholder="Tìm theo mẫu thiết kế, kiểu áo, câu slogan..." class="w-full bg-transparent border-none text-sm focus:outline-none focus:ring-0 text-nep-dark placeholder-nep-gray">
+        <button type="button" @click="searchOpen = false" class="text-xs text-nep-gray hover:text-nep-dark">Đóng [ESC]</button>
+      </form>
+    </div>
+  </header>
+
+  <!-- Messages / Notifications -->
+  {% if messages %}
+    <div class="max-w-4xl mx-auto px-4 mt-4 space-y-2">
+      {% for message in messages %}
+        <div class="px-4 py-3 rounded-xl text-sm flex items-center justify-between shadow-sm {% if message.tags == 'error' %}bg-red-100 text-red-800 border border-red-200{% elif message.tags == 'success' %}bg-emerald-100 text-emerald-800 border border-emerald-200{% else %}bg-nep-creamLight text-nep-dark border border-nep-grayLight{% endif %}">
+          <span>{{ message }}</span>
+          <button onclick="this.parentElement.remove()" class="text-xs opacity-70 hover:opacity-100">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Content Body -->
+  <main class="flex-grow">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-nep-cream border-t border-nep-grayLight mt-20 pt-16 pb-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-nep-grayLight/60">
+        
+        <!-- Col 1: Bio -->
+        <div class="space-y-4">
+          <span class="text-2xl font-serif font-bold text-nep-dark">nếp form.</span>
+          <p class="text-xs text-nep-gray leading-relaxed">
+            Nền tảng tự thiết kế và gia công áo phông cao cấp. Tôn vinh nét độc bản trong từng ý tưởng của bạn với chất liệu vải tuyển chọn.
+          </p>
+          <div class="flex items-center space-x-3 text-nep-green pt-2">
+            <a href="#" class="p-2 bg-nep-creamLight hover:bg-nep-grayLight rounded-full transition"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+            <a href="#" class="p-2 bg-nep-creamLight hover:bg-nep-grayLight rounded-full transition"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+            <a href="#" class="p-2 bg-nep-creamLight hover:bg-nep-grayLight rounded-full transition"><i data-lucide="message-circle" class="w-4 h-4"></i></a>
+          </div>
+        </div>
+
+        <!-- Col 2: Studio & Shop -->
+        <div>
+          <h4 class="text-xs font-bold tracking-wider uppercase text-nep-dark mb-4">Sản phẩm & Studio</h4>
+          <ul class="space-y-2 text-xs text-nep-dark/80">
+            <li><a href="{% url 'studio:index' %}" class="hover:underline">Bắt đầu thiết kế áo</a></li>
+            <li><a href="{% url 'products:catalog' %}" class="hover:underline">Kho mẫu có sẵn</a></li>
+            <li><a href="{% url 'loyalty:club' %}" class="hover:underline">Đặc quyền Nếp Club</a></li>
+            <li><a href="#" @click.prevent="sizeModalOpen = true" class="hover:underline">Bảng gợi ý kích cỡ</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Customer Care -->
+        <div>
+          <h4 class="text-xs font-bold tracking-wider uppercase text-nep-dark mb-4">Chăm sóc khách hàng</h4>
+          <ul class="space-y-2 text-xs text-nep-dark/80">
+            <li><a href="{% url 'core:about' %}" class="hover:underline">Về xưởng Nếp</a></li>
+            <li><a href="{% url 'core:faq' %}" class="hover:underline">Chính sách in ấn & bảo hành</a></li>
+            <li><a href="{% url 'core:contact' %}" class="hover:underline">Liên hệ hợp tác</a></li>
+            <li><a href="{% url 'orders:my_orders' %}" class="hover:underline">Tra cứu đơn hàng</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Newsletter -->
+        <div>
+          <h4 class="text-xs font-bold tracking-wider uppercase text-nep-dark mb-4">Bản tin Nếp</h4>
+          <p class="text-xs text-nep-gray mb-3">Nhận mã giảm 20% cho đơn áo thiết kế đầu tiên.</p>
+          <form class="flex items-center gap-2">
+            <input type="email" placeholder="Email của bạn..." class="w-full bg-white border border-nep-grayLight rounded-lg px-3 py-2 text-xs text-nep-dark focus:outline-none focus:border-nep-green">
+            <button type="button" class="bg-nep-green text-nep-cream text-xs font-medium px-4 py-2 rounded-lg hover:bg-opacity-90 transition">Đăng ký</button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- Copyright -->
+      <div class="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-nep-gray">
+        <p>© 2026 Nếp Form Studio. Bảo lưu mọi quyền.</p>
+        <p class="mt-2 sm:mt-0">Thiết kế tinh gọn cho phong cách sống bền vững.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= SIZE CALCULATOR MODAL (IMAGE 2) ================= -->
+  <div x-show="sizeModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-nep-dark/60 backdrop-blur-sm"
+       x-data="{
+         height: 170,
+         weight: 70,
+         suggestedSize: 'L',
+         stockInfo: 'Màu Đen còn 14 áo size L.',
+         note: 'Gợi ý theo chiều cao và cân nặng trong bảng size tham khảo của Nếp.',
+         loading: false,
+         calculateSize() {
+           if (!this.height || !this.weight) return;
+           this.loading = true;
+           fetch(`/api/calculate-size/?height=${this.height}&weight=${this.weight}`)
+             .then(res => res.json())
+             .then(data => {
+               this.loading = false;
+               if (data.suggested_size) {
+                 this.suggestedSize = data.suggested_size;
+                 this.stockInfo = data.stock_info;
+                 this.note = data.note;
+               }
+             })
+             .catch(() => { this.loading = false; });
+         }
+       }"
+       x-init="$watch('sizeModalOpen', val => { if(val) calculateSize(); })">
+       
+    <div @click.away="sizeModalOpen = false" class="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative border border-nep-grayLight">
+      
+      <!-- Close Button -->
+      <button @click="sizeModalOpen = false" class="absolute top-5 right-5 text-gray-400 hover:text-nep-dark text-xl leading-none">&times;</button>
+
+      <!-- Modal Title -->
+      <h3 class="text-xl font-bold text-nep-dark tracking-tight mb-1">Tìm size áo của bạn</h3>
+      <p class="text-xs text-nep-gray mb-6">Nhập hai số đo, Nếp gợi ý size cho chiếc áo của bạn.</p>
+
+      <!-- Input Fields -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Chiều cao (cm)</label>
+          <input type="number" x-model="height" @input.debounce.300ms="calculateSize()" class="w-full bg-white border border-nep-grayLight rounded-lg px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:border-nep-green transition">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Cân nặng (kg)</label>
+          <input type="number" x-model="weight" @input.debounce.300ms="calculateSize()" class="w-full bg-white border border-nep-grayLight rounded-lg px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:border-nep-green transition">
+        </div>
+      </div>
+
+      <!-- Result Card matching Image 2 -->
+      <div class="bg-nep-cream rounded-xl p-5 mb-5 border border-nep-grayLight/60">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-xs font-semibold text-nep-dark uppercase tracking-wider">Nếp gợi ý</span>
+          <span class="text-3xl font-serif font-bold text-nep-dark" x-text="suggestedSize">L</span>
+        </div>
+        <p class="text-xs text-nep-gray leading-relaxed mb-3" x-text="note"></p>
+        <p class="text-xs font-medium text-nep-dark mb-4" x-text="stockInfo"></p>
+        
+        <!-- Button matching Image 2 -->
+        <button type="button" @click="sizeModalOpen = false; if(window.selectSizeFromModal) window.selectSizeFromModal(suggestedSize)" class="w-full bg-nep-dark hover:bg-nep-darkSoft text-nep-cream py-3 px-4 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition">
+          <span>Chọn size <span x-text="suggestedSize"></span></span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Footnote -->
+      <p class="text-[11px] text-nep-gray leading-relaxed mb-4">
+        Gợi ý tham khảo theo bảng demo, chưa thay thế số đo từng mẫu áo. Phom rộng vừa có thể cho độ rộng khác nhau. Hai số đo chỉ dùng trong hộp thoại này.
+      </p>
+
+      <div class="text-center">
+        <a href="{% url 'core:faq' %}" class="text-xs font-medium text-nep-dark underline hover:opacity-80 transition">Xem bảng size tham khảo</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Initialize lucide icons -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      lucide.createIcons();
+    });
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

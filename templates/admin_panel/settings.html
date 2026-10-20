@@ -1,0 +1,76 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Cài Đặt Cửa Hàng — Quản Trị Nếp Form{% endblock %}
+{% block header_title %}Cài Đặt & Hộp Thư Khách Hàng{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl space-y-8">
+  
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Contact Messages List (7 cols) -->
+    <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+      <h2 class="text-base font-bold text-gray-900 pb-4 border-b border-gray-100 flex items-center justify-between">
+        <span>Tin nhắn từ khách hàng (Form liên hệ)</span>
+        <span class="text-xs text-gray-500 font-normal">{{ messages_list.count }} tin nhắn</span>
+      </h2>
+
+      <div class="divide-y divide-gray-100">
+        {% for m in messages_list %}
+          <div class="py-4 space-y-1 text-xs">
+            <div class="flex justify-between items-baseline">
+              <span class="font-bold text-gray-900">{{ m.name }} ({{ m.phone|default:m.email }})</span>
+              <span class="text-[10px] text-gray-400">{{ m.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <p class="text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100">{{ m.message }}</p>
+          </div>
+        {% empty %}
+          <p class="py-8 text-center text-xs text-gray-400">Hộp thư chưa có tin nhắn mới.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Active Banners & Store Info (5 cols) -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- Banners -->
+      <div class="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
+        <h3 class="text-base font-bold text-gray-900 pb-3 border-b border-gray-100">Banner Trang Chủ</h3>
+        
+        <div class="divide-y divide-gray-100 pt-2">
+          {% for b in banners %}
+            <div class="py-3 text-xs">
+              <p class="font-bold text-gray-900">{{ b.title }}</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">{{ b.subtitle }}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-[10px] bg-nep-cream text-nep-green px-2 py-0.5 rounded font-bold">Thứ tự: {{ b.display_order }}</span>
+                <span class="text-[10px] text-gray-400">Nút: {{ b.button_text }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- System Quick Info -->
+      <div class="bg-nep-cream rounded-3xl p-6 border border-nep-grayLight text-xs space-y-2">
+        <h4 class="font-serif font-bold text-nep-dark text-sm pb-2 border-b border-nep-grayLight">Thông số xưởng Nếp</h4>
+        <div class="flex justify-between py-1">
+          <span class="text-gray-600">Phiên bản Django:</span>
+          <span class="font-bold text-gray-900">Django 5.2</span>
+        </div>
+        <div class="flex justify-between py-1">
+          <span class="text-gray-600">Đơn vị tiền tệ:</span>
+          <span class="font-bold text-gray-900">VNĐ (Việt Nam Đồng)</span>
+        </div>
+        <div class="flex justify-between py-1">
+          <span class="text-gray-600">Công nghệ Canvas:</span>
+          <span class="font-bold text-gray-900">Fabric.js 5.3 + SVG Mockup</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

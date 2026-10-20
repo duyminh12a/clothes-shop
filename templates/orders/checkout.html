@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thanh toán đơn hàng — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  
+  <div class="mb-8">
+    <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// TIẾN HÀNH ĐẶT HÀNG</span>
+    <h1 class="text-3xl font-serif font-bold text-nep-dark mt-1 tracking-tight">Thông tin giao hàng & thanh toán</h1>
+  </div>
+
+  <form method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    {% csrf_token %}
+
+    <!-- Left Column: Form Details -->
+    <div class="lg:col-span-8 space-y-8">
+      
+      <!-- 1. Customer Information -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs">
+        <h2 class="text-base font-serif font-bold text-nep-dark mb-4 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-nep-dark text-white text-xs flex items-center justify-center font-sans font-bold">1</span>
+          <span>Thông tin người nhận áo</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Họ và tên *</label>
+            <input type="text" name="customer_name" required value="{{ user.get_full_name|default:'' }}" placeholder="VD: Nguyễn Văn A" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Số điện thoại *</label>
+            <input type="tel" name="customer_phone" required value="{{ user.phone|default:'' }}" placeholder="VD: 0912345678" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Email nhận thông báo đơn hàng</label>
+            <input type="email" name="customer_email" value="{{ user.email|default:'' }}" placeholder="email@cuaban.com" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Shipping Address -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs">
+        <h2 class="text-base font-serif font-bold text-nep-dark mb-4 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-nep-dark text-white text-xs flex items-center justify-center font-sans font-bold">2</span>
+          <span>Địa chỉ nhận hàng</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Tỉnh / Thành phố *</label>
+            <input type="text" name="city" required placeholder="Hồ Chí Minh, Hà Nội..." class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Quận / Huyện *</label>
+            <input type="text" name="district" required placeholder="Quận 1, Cầu Giấy..." class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Phường / Xã *</label>
+            <input type="text" name="ward" required placeholder="Phường Bến Nghé..." class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Số nhà, tên đường cụ thể *</label>
+          <input type="text" name="street_address" required placeholder="VD: Số 123 Đường Nguyễn Huệ" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Ghi chú cho xưởng in & shipper</label>
+          <textarea name="note" rows="2" placeholder="Ví dụ: Giao giờ hành chính, gọi trước khi giao..." class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2 text-xs font-medium focus:outline-none focus:border-nep-green"></textarea>
+        </div>
+      </div>
+
+      <!-- 3. Payment Method -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs" x-data="{ selectedMethod: 'COD' }">
+        <h2 class="text-base font-serif font-bold text-nep-dark mb-4 flex items-center gap-2">
+          <span class="w-6 h-6 rounded-full bg-nep-dark text-white text-xs flex items-center justify-center font-sans font-bold">3</span>
+          <span>Phương thức thanh toán</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          
+          <!-- COD -->
+          <label class="p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between"
+                 :class="selectedMethod === 'COD' ? 'border-nep-dark bg-nep-cream' : 'border-nep-grayLight hover:border-nep-gray bg-white'">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="payment_method" value="COD" x-model="selectedMethod" class="accent-nep-dark">
+              <div>
+                <span class="text-xs font-bold text-nep-dark block">Thanh toán khi nhận (COD)</span>
+                <span class="text-[10px] text-nep-gray">Nhận áo, kiểm tra và trả tiền mặt</span>
+              </div>
+            </div>
+            <i data-lucide="truck" class="w-5 h-5 text-nep-green"></i>
+          </label>
+
+          <!-- Chuyển khoản ngân hàng -->
+          <label class="p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between"
+                 :class="selectedMethod === 'BANK' ? 'border-nep-dark bg-nep-cream' : 'border-nep-grayLight hover:border-nep-gray bg-white'">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="payment_method" value="BANK" x-model="selectedMethod" class="accent-nep-dark">
+              <div>
+                <span class="text-xs font-bold text-nep-dark block">Chuyển khoản VietQR</span>
+                <span class="text-[10px] text-nep-gray">Quét mã QR qua app ngân hàng</span>
+              </div>
+            </div>
+            <i data-lucide="qr-code" class="w-5 h-5 text-nep-green"></i>
+          </label>
+
+          <!-- VNPAY -->
+          <label class="p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between"
+                 :class="selectedMethod === 'VNPAY' ? 'border-nep-dark bg-nep-cream' : 'border-nep-grayLight hover:border-nep-gray bg-white'">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="payment_method" value="VNPAY" x-model="selectedMethod" class="accent-nep-dark">
+              <div>
+                <span class="text-xs font-bold text-nep-dark block">Cổng VNPAY</span>
+                <span class="text-[10px] text-nep-gray">Thẻ ATM nội địa / Visa / Mastercard</span>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-blue-600">VNPAY</span>
+          </label>
+
+          <!-- MoMo -->
+          <label class="p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between"
+                 :class="selectedMethod === 'MOMO' ? 'border-nep-dark bg-nep-cream' : 'border-nep-grayLight hover:border-nep-gray bg-white'">
+            <div class="flex items-center gap-3">
+              <input type="radio" name="payment_method" value="MOMO" x-model="selectedMethod" class="accent-nep-dark">
+              <div>
+                <span class="text-xs font-bold text-nep-dark block">Ví điện tử MoMo</span>
+                <span class="text-[10px] text-nep-gray">Thanh toán tức thì qua ví MoMo</span>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-pink-600">MoMo</span>
+          </label>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Order Review & Submit -->
+    <div class="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs space-y-6 sticky top-28">
+      <h3 class="text-base font-serif font-bold text-nep-dark pb-4 border-b border-gray-100">Chi tiết đơn đặt</h3>
+
+      <div class="divide-y divide-gray-100 max-h-72 overflow-y-auto studio-scroll">
+        {% for item in items %}
+          <div class="py-3 flex items-center justify-between text-xs">
+            <div class="pr-2">
+              <p class="font-bold text-nep-dark">{{ item.variant.product.name }}</p>
+              <p class="text-[10px] text-nep-gray">{{ item.variant.color.name }} / Size {{ item.variant.size.name }} x {{ item.quantity }}</p>
+            </div>
+            <span class="font-semibold text-nep-dark shrink-0">{{ item.get_total_price|floatformat:0 }}₫</span>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pricing Summary -->
+      <div class="space-y-2 text-xs border-t border-gray-100 pt-4">
+        <div class="flex justify-between text-nep-gray">
+          <span>Tiền áo & in ấn:</span>
+          <span class="font-semibold text-nep-dark">{{ subtotal|floatformat:0 }}₫</span>
+        </div>
+        {% if discount_amount > 0 %}
+          <div class="flex justify-between text-emerald-600 font-medium">
+            <span>Khuyến mãi ({{ coupon.code }}):</span>
+            <span>-{{ discount_amount|floatformat:0 }}₫</span>
+          </div>
+        {% endif %}
+        <div class="flex justify-between text-nep-gray">
+          <span>Phí vận chuyển toàn quốc:</span>
+          <span class="font-semibold text-nep-dark">{{ shipping_fee|floatformat:0 }}₫</span>
+        </div>
+        <div class="flex justify-between text-base font-bold text-nep-dark pt-3 border-t border-gray-100">
+          <span>Tổng thanh toán:</span>
+          <span class="text-nep-green">{{ total_amount|floatformat:0 }}₫</span>
+        </div>
+      </div>
+
+      <!-- Member perks alert -->
+      <div class="bg-nep-cream rounded-xl p-3 text-[11px] text-nep-dark flex items-center gap-2 border border-nep-grayLight/60">
+        <i data-lucide="award" class="w-4 h-4 text-nep-gold shrink-0"></i>
+        <span>Đơn hàng này tích lũy <strong>{{ total_amount|floatformat:0 }}</strong> điểm Nếp Club cho bạn.</span>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="w-full py-4 bg-nep-dark hover:bg-nep-darkSoft text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition">
+        <span>Xác nhận đặt áo ngay</span>
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+
+      <p class="text-[10px] text-nep-gray text-center leading-relaxed">
+        Bằng việc đặt hàng, bạn đồng ý với các Điều khoản in ấn & Chính sách giao hàng của Nếp Form.
+      </p>
+
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

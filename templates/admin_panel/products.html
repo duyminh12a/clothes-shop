@@ -1,0 +1,90 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Quản lý Sản phẩm & Tồn kho — Quản Trị Nếp Form{% endblock %}
+{% block header_title %}Danh Sách Dòng Áo & Tồn Kho{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl" x-data="productManager()">
+  
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-base font-bold text-gray-900">Danh mục phôi áo xưởng Nếp</h2>
+      <p class="text-xs text-gray-500">Cập nhật nhanh giá bán và số lượng tồn kho từng màu / size</p>
+    </div>
+    <a href="{% url 'admin_panel:product_create' %}" class="inline-flex items-center gap-1.5 bg-nep-dark hover:bg-gray-800 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      <span>Thêm phôi áo mới</span>
+    </a>
+  </div>
+
+  <div class="space-y-6">
+    {% for p in products %}
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+        
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center pb-5 border-b border-gray-100 gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-lg font-bold text-gray-900">{{ p.name }}</h3>
+              <span class="text-[10px] bg-nep-cream text-nep-green px-2 py-0.5 rounded-full font-bold uppercase">{{ p.product_type.name }}</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">{{ p.fabric_info }} • {{ p.fit_type }}</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-gray-400 block">Giá cơ bản:</span>
+            <span class="text-base font-bold text-nep-green">{{ p.base_price|floatformat:0 }}₫</span>
+          </div>
+        </div>
+
+        <!-- Variants Matrix -->
+        <div class="pt-5">
+          <span class="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-3">Tồn kho biến thể (Màu x Size)</span>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {% for v in p.variants.all %}
+              <div class="p-3 rounded-2xl bg-gray-50 border border-gray-200 text-xs flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-bold text-gray-900">{{ v.color.name }}</span>
+                  <span class="font-mono font-bold px-1.5 py-0.5 rounded bg-white text-gray-700 text-[10px] border border-gray-200">{{ v.size.name }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between pt-1">
+                  <span class="text-[10px] text-gray-400">Tồn:</span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="number" value="{{ v.stock_quantity }}" @change="updateStock({{ v.id }}, $event.target.value)" class="w-14 text-center bg-white border border-gray-200 rounded-lg py-0.5 text-xs font-bold text-gray-800 focus:outline-none focus:border-nep-green">
+                    <span class="text-[10px] text-gray-500">cái</span>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function productManager() {
+  return {
+    updateStock(variantId, newStock) {
+      fetch('{% url "admin_panel:quick_update_stock" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ variant_id: variantId, stock: newStock })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          // Success indicator
+        }
+      });
+    }
+  };
+}
+</script>
+{% endblock %}

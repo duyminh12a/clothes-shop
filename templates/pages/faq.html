@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hỏi đáp thường gặp — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  
+  <div class="text-center mb-16">
+    <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// HỖ TRỢ & HỎI ĐÁP</span>
+    <h1 class="text-4xl font-serif font-bold text-nep-dark mt-2 tracking-tight">Câu hỏi thường gặp</h1>
+    <p class="text-sm text-nep-gray mt-2">Mọi giải đáp về chính sách in ấn, thời gian giao hàng và chất lượng áo.</p>
+  </div>
+
+  <div class="space-y-4" x-data="{ active: null }">
+    {% for f in faqs %}
+      <div class="bg-white rounded-2xl border border-nep-grayLight overflow-hidden">
+        <button @click="active = active === {{ forloop.counter }} ? null : {{ forloop.counter }}" class="w-full px-6 py-5 text-left flex justify-between items-center text-sm font-bold text-nep-dark hover:bg-nep-creamLight/50 transition">
+          <span>{{ f.question }}</span>
+          <i data-lucide="chevron-down" class="w-4 h-4 transform transition-transform" :class="active === {{ forloop.counter }} ? 'rotate-180' : ''"></i>
+        </button>
+        <div x-show="active === {{ forloop.counter }}" x-cloak class="px-6 pb-6 pt-1 text-xs text-nep-gray leading-relaxed border-t border-gray-100">
+          {{ f.answer }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

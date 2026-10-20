@@ -1,0 +1,353 @@
+import os
+
+def generate_front_svg():
+    return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="100%" height="100%">
+  <defs>
+    <!-- Realistic Multi-layer Drop Shadow -->
+    <filter id="realistic-shadow" x="-20%" y="-15%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#000000" flood-opacity="0.12" />
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.06" />
+    </filter>
+
+    <!-- Torso 3D Lighting Gradient (Soft highlight center, subtle falloff sides) -->
+    <linearGradient id="body-shading" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.12"/>
+      <stop offset="12%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="28%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="72%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="88%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.12"/>
+    </linearGradient>
+
+    <!-- Vertical Depth Gradient (Shoulder to Hem) -->
+    <linearGradient id="vertical-light" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.09"/>
+      <stop offset="15%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.00"/>
+      <stop offset="85%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.14"/>
+    </linearGradient>
+
+    <!-- Collar Drop Shadow on Chest -->
+    <radialGradient id="collar-cast-shadow" cx="50%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#000000" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.0"/>
+    </radialGradient>
+
+    <!-- Left Underarm Crease Shadow -->
+    <linearGradient id="left-armpit-shadow" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.22"/>
+      <stop offset="40%" stop-color="#000000" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.0"/>
+    </linearGradient>
+
+    <!-- Right Underarm Crease Shadow -->
+    <linearGradient id="right-armpit-shadow" x1="100%" y1="0%" x2="0%" y2="80%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.22"/>
+      <stop offset="40%" stop-color="#000000" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.0"/>
+    </linearGradient>
+
+    <!-- Collar Shading -->
+    <linearGradient id="collar-shading" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ================= 1. MAIN SILHOUETTE (With Drop Shadow) ================= -->
+  <g filter="url(#realistic-shadow)">
+    <!-- Base Shirt Cut: Natural Streetwear Oversized Silhouette with Draped Sleeves -->
+    <path id="shirt-silhouette" d="
+      M 240 92
+      C 215 105, 185 120, 155 138
+      C 138 175, 126 215, 120 260
+      C 117 285, 115 315, 114 340
+      C 135 348, 165 356, 186 360
+      C 192 330, 198 298, 205 268
+      C 205 350, 202 460, 202 580
+      C 265 588, 335 588, 398 580
+      C 398 460, 395 350, 395 268
+      C 402 298, 408 330, 414 360
+      C 435 356, 465 348, 486 340
+      C 485 315, 483 285, 480 260
+      C 474 215, 462 175, 445 138
+      C 415 120, 385 105, 360 92
+      C 335 142, 265 142, 240 92
+      Z
+    " fill="var(--shirt-color, #F5F0E8)" />
+  </g>
+
+  <!-- ================= 2. 3D LIGHTING & FABRIC VOLUMES ================= -->
+  <!-- Horizontal Torso 3D Shading -->
+  <path d="
+    M 240 92
+    C 215 105, 185 120, 155 138
+    C 138 175, 126 215, 120 260
+    C 117 285, 115 315, 114 340
+    C 135 348, 165 356, 186 360
+    C 192 330, 198 298, 205 268
+    C 205 350, 202 460, 202 580
+    C 265 588, 335 588, 398 580
+    C 398 460, 395 350, 395 268
+    C 402 298, 408 330, 414 360
+    C 435 356, 465 348, 486 340
+    C 485 315, 483 285, 480 260
+    C 474 215, 462 175, 445 138
+    C 415 120, 385 105, 360 92
+    C 335 142, 265 142, 240 92
+    Z
+  " fill="url(#body-shading)" />
+
+  <!-- Vertical Lighting (Shoulder highlight to hem depth) -->
+  <path d="
+    M 240 92
+    C 215 105, 185 120, 155 138
+    C 138 175, 126 215, 120 260
+    C 117 285, 115 315, 114 340
+    C 135 348, 165 356, 186 360
+    C 192 330, 198 298, 205 268
+    C 205 350, 202 460, 202 580
+    C 265 588, 335 588, 398 580
+    C 398 460, 395 350, 395 268
+    C 402 298, 408 330, 414 360
+    C 435 356, 465 348, 486 340
+    C 485 315, 483 285, 480 260
+    C 474 215, 462 175, 445 138
+    C 415 120, 385 105, 360 92
+    C 335 142, 265 142, 240 92
+    Z
+  " fill="url(#vertical-light)" />
+
+  <!-- Soft Shadow Cast Below Collar onto Chest -->
+  <path d="
+    M 240 92
+    C 265 142, 335 142, 360 92
+    C 355 155, 245 155, 240 92
+    Z
+  " fill="url(#collar-cast-shadow)" />
+
+  <!-- Left Underarm Shadow Overlay -->
+  <path d="
+    M 186 360
+    C 192 330, 198 298, 205 268
+    C 205 315, 195 345, 186 360
+    Z
+  " fill="url(#left-armpit-shadow)" />
+
+  <!-- Right Underarm Shadow Overlay -->
+  <path d="
+    M 414 360
+    C 408 330, 402 298, 395 268
+    C 395 315, 405 345, 414 360
+    Z
+  " fill="url(#right-armpit-shadow)" />
+
+  <!-- ================= 3. INNER NECK / BACK COLLAR ================= -->
+  <!-- Visible Back Neck Opening -->
+  <path d="
+    M 242 93
+    C 265 110, 335 110, 358 93
+    C 345 84, 255 84, 242 93
+    Z
+  " fill="var(--inner-neck, #D8D1C2)" opacity="0.9" />
+
+  <!-- Inner Neck Brand Label / Loop Stitch -->
+  <rect x="286" y="86" width="28" height="12" rx="2" fill="var(--collar-stroke, rgba(0,0,0,0.15))" opacity="0.7"/>
+  <text x="300" y="95" font-family="sans-serif" font-size="6" font-weight="bold" fill="var(--shirt-color, #F5F0E8)" text-anchor="middle" letter-spacing="1">NẾP</text>
+
+  <!-- ================= 4. CREWNECK RIBBING (Tone-on-tone) ================= -->
+  <path d="
+    M 240 92
+    C 265 142, 335 142, 360 92
+    C 356 94, 332 132, 300 134
+    C 268 132, 244 94, 240 92
+    Z
+  " fill="var(--collar-color, #E9E3D6)" stroke="var(--collar-stroke, rgba(0,0,0,0.08))" stroke-width="1" />
+
+  <!-- Collar Texture Shading -->
+  <path d="
+    M 240 92
+    C 265 142, 335 142, 360 92
+    C 356 94, 332 132, 300 134
+    C 268 132, 244 94, 240 92
+    Z
+  " fill="url(#collar-shading)" />
+
+  <!-- Double Topstitch around Collar -->
+  <path d="
+    M 239 96
+    C 265 145, 335 145, 361 96
+  " fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.14))" stroke-width="1.1" stroke-dasharray="3,2" />
+
+  <!-- ================= 5. DROP SHOULDER SEAMS & NATURAL SLEEVE DETAILS ================= -->
+  <!-- Left Drop Shoulder Seam (from shoulder point to underarm) -->
+  <path d="M 155 138 C 172 175, 188 220, 205 268" fill="none" stroke="var(--seam-shadow, rgba(0,0,0,0.14))" stroke-width="1.6" />
+  <path d="M 154 139 C 171 176, 187 221, 204 269" fill="none" stroke="var(--seam-highlight, rgba(255,255,255,0.16))" stroke-width="1.0" />
+
+  <!-- Right Drop Shoulder Seam -->
+  <path d="M 445 138 C 428 175, 412 220, 395 268" fill="none" stroke="var(--seam-shadow, rgba(0,0,0,0.14))" stroke-width="1.6" />
+  <path d="M 446 139 C 429 176, 413 221, 396 269" fill="none" stroke="var(--seam-highlight, rgba(255,255,255,0.16))" stroke-width="1.0" />
+
+  <!-- Left Sleeve Hem Stitches (Double-stitched cuff) -->
+  <path d="M 116 332 C 137 340, 165 348, 184 352" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.16))" stroke-width="1.2" stroke-dasharray="3,2" />
+  <path d="M 118 335 C 138 343, 165 351, 183 355" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.16))" stroke-width="1.2" stroke-dasharray="3,2" />
+
+  <!-- Right Sleeve Hem Stitches -->
+  <path d="M 484 332 C 463 340, 435 348, 416 352" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.16))" stroke-width="1.2" stroke-dasharray="3,2" />
+  <path d="M 482 335 C 462 343, 435 351, 417 355" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.16))" stroke-width="1.2" stroke-dasharray="3,2" />
+
+  <!-- Bottom Hem Stitch (Double-stitched hem) -->
+  <path d="M 204 568 C 265 576, 335 576, 396 568" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.14))" stroke-width="1.2" stroke-dasharray="3,2" />
+  <path d="M 204 572 C 265 580, 335 580, 396 572" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.14))" stroke-width="1.2" stroke-dasharray="3,2" />
+
+  <!-- ================= 6. NATURAL FABRIC DRAPES & CREASES ================= -->
+  <!-- Left Side Underarm Crease -->
+  <path d="M 205 268 C 220 295, 214 330, 208 360" fill="none" stroke="var(--fold-shadow, rgba(0,0,0,0.08))" stroke-width="2.5" />
+  <path d="M 206 268 C 221 295, 215 330, 209 360" fill="none" stroke="var(--fold-highlight, rgba(255,255,255,0.10))" stroke-width="1" />
+
+  <!-- Right Side Underarm Crease -->
+  <path d="M 395 268 C 380 295, 386 330, 392 360" fill="none" stroke="var(--fold-shadow, rgba(0,0,0,0.08))" stroke-width="2.5" />
+  <path d="M 394 268 C 379 295, 385 330, 391 360" fill="none" stroke="var(--fold-highlight, rgba(255,255,255,0.10))" stroke-width="1" />
+
+  <!-- Subtle Sleeve Volume Creases -->
+  <path d="M 124 230 C 138 245, 155 255, 175 262" fill="none" stroke="var(--fold-shadow, rgba(0,0,0,0.05))" stroke-width="2.0" />
+  <path d="M 476 230 C 462 245, 445 255, 425 262" fill="none" stroke="var(--fold-shadow, rgba(0,0,0,0.05))" stroke-width="2.0" />
+
+  <!-- Waist Gentle Drape Folds -->
+  <path d="M 204 470 C 224 490, 216 525, 208 550" fill="none" stroke="var(--fold-shadow, rgba(0,0,0,0.05))" stroke-width="2.0" />
+  <path d="M 396 470 C 376 490, 384 525, 392 550" fill="none" stroke="var(--fold-shadow, rgba(0,0,0,0.05))" stroke-width="2.0" />
+</svg>'''
+
+def generate_back_svg():
+    return '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="100%" height="100%">
+  <defs>
+    <filter id="realistic-shadow-back" x="-20%" y="-15%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#000000" flood-opacity="0.12" />
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.06" />
+    </filter>
+
+    <linearGradient id="body-shading-back" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.12"/>
+      <stop offset="12%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="28%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="72%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="88%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.12"/>
+    </linearGradient>
+
+    <linearGradient id="vertical-light-back" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.09"/>
+      <stop offset="15%" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="50%" stop-color="#000000" stop-opacity="0.00"/>
+      <stop offset="85%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.14"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ================= 1. MAIN SILHOUETTE (MATCHING FRONT EXACTLY) ================= -->
+  <g filter="url(#realistic-shadow-back)">
+    <path id="shirt-silhouette-back" d="
+      M 240 92
+      C 215 105, 185 120, 155 138
+      C 138 175, 126 215, 120 260
+      C 117 285, 115 315, 114 340
+      C 135 348, 165 356, 186 360
+      C 192 330, 198 298, 205 268
+      C 205 350, 202 460, 202 580
+      C 265 588, 335 588, 398 580
+      C 398 460, 395 350, 395 268
+      C 402 298, 408 330, 414 360
+      C 435 356, 465 348, 486 340
+      C 485 315, 483 285, 480 260
+      C 474 215, 462 175, 445 138
+      C 415 120, 385 105, 360 92
+      C 335 84, 265 84, 240 92
+      Z
+    " fill="var(--shirt-color, #F5F0E8)" />
+  </g>
+
+  <!-- ================= 2. 3D SHADING OVERLAYS ================= -->
+  <path d="
+    M 240 92
+    C 215 105, 185 120, 155 138
+    C 138 175, 126 215, 120 260
+    C 117 285, 115 315, 114 340
+    C 135 348, 165 356, 186 360
+    C 192 330, 198 298, 205 268
+    C 205 350, 202 460, 202 580
+    C 265 588, 335 588, 398 580
+    C 398 460, 395 350, 395 268
+    C 402 298, 408 330, 414 360
+    C 435 356, 465 348, 486 340
+    C 485 315, 483 285, 480 260
+    C 474 215, 462 175, 445 138
+    C 415 120, 385 105, 360 92
+    C 335 84, 265 84, 240 92
+    Z
+  " fill="url(#body-shading-back)" />
+
+  <path d="
+    M 240 92
+    C 215 105, 185 120, 155 138
+    C 138 175, 126 215, 120 260
+    C 117 285, 115 315, 114 340
+    C 135 348, 165 356, 186 360
+    C 192 330, 198 298, 205 268
+    C 205 350, 202 460, 202 580
+    C 265 588, 335 588, 398 580
+    C 398 460, 395 350, 395 268
+    C 402 298, 408 330, 414 360
+    C 435 356, 465 348, 486 340
+    C 485 315, 483 285, 480 260
+    C 474 215, 462 175, 445 138
+    C 415 120, 385 105, 360 92
+    C 335 84, 265 84, 240 92
+    Z
+  " fill="url(#vertical-light-back)" />
+
+  <!-- ================= 3. BACK HIGH COLLAR RIBBING ================= -->
+  <path d="
+    M 240 92
+    C 265 84, 335 84, 360 92
+    C 335 102, 265 102, 240 92
+    Z
+  " fill="var(--collar-color, #E9E3D6)" stroke="var(--collar-stroke, rgba(0,0,0,0.08))" stroke-width="1" />
+
+  <!-- Collar Back Topstitch -->
+  <path d="
+    M 239 96
+    C 265 88, 335 88, 361 96
+  " fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.14))" stroke-width="1.1" stroke-dasharray="3,2" />
+
+  <!-- Half-moon Back Neck Reinforcement Patch -->
+  <path d="
+    M 255 102
+    C 275 128, 325 128, 345 102
+  " fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.14))" stroke-width="1" stroke-dasharray="3,2" />
+
+  <!-- ================= 4. DROP SHOULDER SEAMS & SLEEVES ================= -->
+  <path d="M 155 138 C 172 175, 188 220, 205 268" fill="none" stroke="var(--seam-shadow, rgba(0,0,0,0.14))" stroke-width="1.6" />
+  <path d="M 445 138 C 428 175, 412 220, 395 268" fill="none" stroke="var(--seam-shadow, rgba(0,0,0,0.14))" stroke-width="1.6" />
+
+  <!-- Sleeve Hem Stitches -->
+  <path d="M 116 332 C 137 340, 165 348, 184 352" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.16))" stroke-width="1.2" stroke-dasharray="3,2" />
+  <path d="M 484 332 C 463 340, 435 348, 416 352" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.16))" stroke-width="1.2" stroke-dasharray="3,2" />
+
+  <!-- Bottom Hem Stitch -->
+  <path d="M 204 568 C 265 576, 335 576, 396 568" fill="none" stroke="var(--stitch-color, rgba(0,0,0,0.14))" stroke-width="1.2" stroke-dasharray="3,2" />
+</svg>'''
+
+if __name__ == '__main__':
+    base_dir = r'C:\Users\Admin\.gemini\antigravity\scratch\nep-form'
+    mockup_dir = os.path.join(base_dir, 'static', 'images', 'mockups')
+    
+    with open(os.path.join(mockup_dir, 'tshirt_front.svg'), 'w', encoding='utf-8') as f:
+        f.write(generate_front_svg())
+    with open(os.path.join(mockup_dir, 'tshirt_back.svg'), 'w', encoding='utf-8') as f:
+        f.write(generate_back_svg())
+        
+    print('Generated new SVG mockups successfully!')

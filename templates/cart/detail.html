@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Giỏ hàng của bạn — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="cartView()">
+  
+  <div class="mb-8">
+    <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// GIỎ HÀNG</span>
+    <h1 class="text-3xl font-serif font-bold text-nep-dark mt-1 tracking-tight">Chiếc áo bạn đã chọn</h1>
+  </div>
+
+  {% if items %}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Items List (Left Column) -->
+      <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs">
+        <div class="divide-y divide-gray-100">
+          {% for item in items %}
+            <div class="py-6 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" id="item-row-{{ item.id }}">
+              
+              <!-- Image & Info -->
+              <div class="flex items-center gap-4">
+                <div class="w-20 h-24 rounded-xl bg-nep-cream flex items-center justify-center p-2 relative shrink-0 border border-nep-grayLight/60"
+                     style="--shirt-color: {{ item.variant.color.hex_code|default:'#F5F0E8' }}; --collar-color: {{ item.variant.color.hex_code|default:'#F5F0E8' }};">
+                  <div class="w-full h-full">
+                    {% include 'components/mockup_front.html' %}
+                  </div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-nep-dark">{{ item.variant.product.name }}</h3>
+                  <div class="flex flex-wrap items-center gap-2 mt-1 text-xs text-nep-gray">
+                    <span>Màu: <strong class="text-nep-dark">{{ item.variant.color.name }}</strong></span>
+                    <span>•</span>
+                    <span>Size: <strong class="text-nep-dark">{{ item.variant.size.name }}</strong></span>
+                    {% if item.print_zone_front %}
+                      <span>•</span>
+                      <span>In trước: {{ item.print_zone_front.name }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="text-xs font-semibold text-nep-dark mt-2">
+                    {{ item.get_unit_total_price|floatformat:0 }}₫ / áo
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quantity & Total -->
+              <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6">
+                <!-- Counter -->
+                <div class="flex items-center border border-nep-grayLight rounded-lg bg-nep-creamLight px-2 py-1">
+                  <button type="button" @click="updateQty({{ item.id }}, {{ item.quantity }} - 1)" class="p-1 hover:text-nep-green text-xs font-bold">-</button>
+                  <span class="px-3 text-xs font-bold text-nep-dark">{{ item.quantity }}</span>
+                  <button type="button" @click="updateQty({{ item.id }}, {{ item.quantity }} + 1)" class="p-1 hover:text-nep-green text-xs font-bold">+</button>
+                </div>
+
+                <!-- Item Total -->
+                <div class="text-right">
+                  <span class="text-sm font-bold text-nep-dark block">{{ item.get_total_price|floatformat:0 }}₫</span>
+                  <button type="button" @click="removeItem({{ item.id }})" class="text-[11px] text-red-500 hover:underline">Xóa</button>
+                </div>
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Order Summary (Right Column) -->
+      <div class="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs space-y-6">
+        <h3 class="text-base font-serif font-bold text-nep-dark pb-4 border-b border-gray-100">Tóm tắt đơn hàng</h3>
+
+        <!-- Coupon Input -->
+        <div>
+          <label class="block text-[11px] font-semibold text-nep-gray uppercase tracking-wider mb-2">Mã giảm giá</label>
+          <div class="flex gap-2">
+            <input type="text" x-model="couponCode" placeholder="VD: NEPFORM20" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-3 py-2 text-xs font-bold text-nep-dark uppercase focus:outline-none focus:border-nep-green">
+            <button type="button" @click="applyCoupon()" class="bg-nep-dark hover:bg-nep-darkSoft text-white text-xs font-semibold px-4 py-2 rounded-xl transition">Áp dụng</button>
+          </div>
+          <p x-show="couponMessage" x-text="couponMessage" class="text-[11px] mt-1.5 font-medium" :class="couponSuccess ? 'text-emerald-600' : 'text-red-500'"></p>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="space-y-3 text-xs text-nep-dark/80 pt-2 border-t border-gray-100">
+          <div class="flex justify-between">
+            <span>Tiền hàng:</span>
+            <span class="font-bold text-nep-dark">{{ subtotal|floatformat:0 }}₫</span>
+          </div>
+          <div class="flex justify-between" x-show="discount > 0">
+            <span>Giảm giá khuyến mãi:</span>
+            <span class="font-bold text-emerald-600">-<span x-text="discount.toLocaleString()"></span>₫</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Phí giao hàng dự kiến:</span>
+            <span class="font-bold text-nep-dark">{{ shipping_fee|floatformat:0 }}₫</span>
+          </div>
+          <div class="flex justify-between text-base font-bold text-nep-dark pt-3 border-t border-gray-100">
+            <span>Tổng thanh toán:</span>
+            <span class="text-nep-green" x-text="`${total.toLocaleString()}₫`">{{ total|floatformat:0 }}₫</span>
+          </div>
+        </div>
+
+        <!-- Checkout Button -->
+        <a href="{% url 'orders:checkout' %}" class="w-full py-4 bg-nep-dark hover:bg-nep-darkSoft text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition">
+          <span>Tiến hành thanh toán</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+
+        <div class="text-center pt-2">
+          <a href="{% url 'products:catalog' %}" class="text-xs text-nep-gray hover:text-nep-dark underline font-medium">← Tiếp tục chọn thêm áo</a>
+        </div>
+
+      </div>
+
+    </div>
+  {% else %}
+    <div class="bg-white rounded-3xl p-16 text-center border border-nep-grayLight max-w-xl mx-auto">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-nep-cream flex items-center justify-center text-nep-gray">
+        <i data-lucide="shopping-bag" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-lg font-serif font-bold text-nep-dark mb-2">Giỏ hàng của bạn đang trống</h3>
+      <p class="text-xs text-nep-gray mb-6">Bạn chưa chọn chiếc áo nào. Hãy ghé Studio để tự tạo mẫu áo mang nét riêng nhé!</p>
+      <a href="{% url 'studio:index' %}" class="inline-flex items-center gap-2 bg-nep-dark hover:bg-nep-darkSoft text-white px-6 py-3 rounded-full text-xs font-semibold shadow-xs transition">
+        <span>Bắt đầu thiết kế áo</span>
+        <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+
+<script>
+function cartView() {
+  return {
+    couponCode: '{{ coupon.code|default:"" }}',
+    couponMessage: '',
+    couponSuccess: false,
+    discount: {{ discount_amount|default:0 }},
+    subtotal: {{ subtotal|default:0 }},
+    shipping: {{ shipping_fee|default:30000 }},
+    
+    get total() {
+      return Math.max(0, this.subtotal - this.discount + this.shipping);
+    },
+
+    updateQty(itemId, newQty) {
+      fetch(`/gio-hang/api/update/${itemId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ quantity: newQty })
+      })
+      .then(res => res.json())
+      .then(data => {
+        window.location.reload();
+      });
+    },
+
+    removeItem(itemId) {
+      if (!confirm('Bạn có chắc chắn muốn xóa áo này khỏi giỏ?')) return;
+      fetch(`/gio-hang/api/remove/${itemId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        window.location.reload();
+      });
+    },
+
+    applyCoupon() {
+      const self = this;
+      fetch('{% url "cart:api_apply_coupon" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ code: this.couponCode })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          self.couponSuccess = true;
+          self.couponMessage = data.message;
+          self.discount = data.discount_amount;
+        } else {
+          self.couponSuccess = false;
+          self.couponMessage = data.error;
+        }
+      });
+    }
+  };
+}
+</script>
+{% endblock %}

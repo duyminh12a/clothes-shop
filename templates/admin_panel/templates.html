@@ -1,0 +1,83 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Quản lý Mẫu Studio — Quản Trị Nếp Form{% endblock %}
+{% block header_title %}Kho Mẫu Cảm Hứng Studio{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl space-y-8">
+  
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left: Templates List (8 cols) -->
+    <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+      <h2 class="text-base font-bold text-gray-900 pb-4 border-b border-gray-100 flex items-center justify-between">
+        <span>Mẫu hiển thị trong Studio</span>
+        <span class="text-xs text-gray-500 font-normal">{{ templates.count }} mẫu</span>
+      </h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+        {% for t in templates %}
+          <div class="p-5 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-nep-greenMuted bg-white px-2 py-0.5 rounded border border-gray-200 inline-block mb-2">{{ t.category.name }}</span>
+              <h3 class="font-bold text-gray-900 text-sm">{{ t.name }}</h3>
+              {% if t.slogan %}
+                <p class="text-xs text-gray-500 mt-1 italic font-serif">"{{ t.slogan }}"</p>
+              {% endif %}
+            </div>
+
+            <div class="pt-4 mt-4 border-t border-gray-200/60 flex items-center justify-between text-xs">
+              <span class="text-[10px] text-gray-400">Tag: {{ t.tags|default:"Mặc định" }}</span>
+              <a href="{% url 'studio:index' %}?template_id={{ t.id }}" target="_blank" class="text-nep-dark hover:underline font-bold text-[11px] flex items-center gap-1">
+                <span>Mở xem</span>
+                <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+          </div>
+        {% empty %}
+          <p class="col-span-full py-8 text-center text-xs text-gray-400">Chưa có mẫu nào.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right: Add Template Form (4 cols) -->
+    <div class="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+      <h3 class="text-base font-bold text-gray-900 pb-4 border-b border-gray-100">Thêm mẫu mới</h3>
+
+      <form method="POST" class="space-y-4 pt-4">
+        {% csrf_token %}
+        
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Bộ sưu tập / Danh mục *</label>
+          <select name="category_id" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-nep-green">
+            {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Tiêu đề mẫu *</label>
+          <input type="text" name="name" required placeholder="VD: THÊNH THANG" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold focus:outline-none focus:border-nep-green">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Phụ đề / Slogan</label>
+          <input type="text" name="slogan" placeholder="VD: BƯỚC ĐI TỰ DO" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-nep-green">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Thẻ Tag (cách nhau dấu phẩy)</label>
+          <input type="text" name="tags" placeholder="tối giản, typo, tự do" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-nep-green">
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-nep-dark hover:bg-gray-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
+          Thêm mẫu vào Studio
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

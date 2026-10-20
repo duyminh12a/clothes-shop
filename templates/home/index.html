@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nếp Form — Xưởng áo của bạn | Tự thiết kế áo thun theo cách của bạn{% endblock %}
+
+{% block content %}
+<!-- ================= HERO SECTION (MATCHING IMAGE 3) ================= -->
+<section class="relative overflow-hidden pt-8 pb-16 md:py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+      
+      <!-- Left Column: Typography & CTA -->
+      <div class="lg:col-span-6 space-y-6">
+        
+        <!-- Breadcrumb / Tag -->
+        <div class="flex items-center gap-2 text-xs font-semibold tracking-wider text-nep-greenMuted uppercase">
+          <span class="text-nep-gray">///</span>
+          <span>NẾP / XƯỞNG ÁO CỦA BẠN</span>
+        </div>
+
+        <!-- Main Headline -->
+        <h1 class="text-5xl sm:text-6xl xl:text-7xl font-serif font-bold text-nep-dark tracking-tight leading-[1.08]">
+          Mặc một điều<br>
+          <span class="italic font-normal">rất riêng.</span>
+        </h1>
+
+        <!-- Subheading -->
+        <div class="space-y-1 text-base sm:text-lg text-nep-dark/80 font-normal leading-relaxed pt-1">
+          <p>Từ một câu bạn thích, một nét vẽ vu vơ.</p>
+          <p>Tự tay tạo nên chiếc áo mang dấu ấn của mình.</p>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="pt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <a href="{% url 'studio:index' %}" class="inline-flex items-center gap-2.5 bg-nep-dark hover:bg-nep-darkSoft text-nep-cream px-8 py-4 rounded-full text-base font-semibold transition-all shadow-md hover:shadow-lg group">
+            <span>Bắt đầu thiết kế</span>
+            <i data-lucide="arrow-up-right" class="w-5 h-5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+          </a>
+        </div>
+
+        <!-- Subtext with scroll indicator -->
+        <div class="pt-8 flex items-center gap-3 text-xs text-nep-gray">
+          <span>Chọn phôi áo. Thêm nét riêng. Mặc thôi.</span>
+          <a href="#quy-trinh" class="w-7 h-7 rounded-full border border-nep-grayLight flex items-center justify-center text-nep-dark hover:bg-nep-grayLight/40 transition">
+            <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Interactive Hero Mockup (Image 3) -->
+      <div class="lg:col-span-6 flex justify-center"
+           x-data="{
+             shirtColor: 'kem',
+             side: 'front',
+             colors: {
+               kem: { name: 'Kem', hex: '#F5F0E8', collar: '#E9E3D6', inner: '#D8D1C2', stroke: '#E2DBD0', stitch: '#D4CDBD', text: '#2D3A2E', isDark: false },
+               den: { name: 'Đen', hex: '#1C1C1C', collar: '#282828', inner: '#121212', stroke: '#2D2D2D', stitch: '#383838', text: '#FAF7F2', isDark: true },
+               reu: { name: 'Rêu', hex: '#5E6E49', collar: '#505E3E', inner: '#3C472E', stroke: '#475437', stitch: '#435034', text: '#FAF7F2', isDark: true }
+             }
+           }">
+        
+        <!-- Curved Architectural Card Container -->
+        <div class="relative w-full max-w-lg bg-nep-creamLight rounded-[40px] p-6 sm:p-8 border border-nep-grayLight/70 shadow-sm overflow-visible">
+          
+          <!-- Top Floating Tag -->
+          <div class="text-center mb-2">
+            <span class="text-[11px] font-semibold tracking-wider text-nep-gray uppercase">VẢI LÀ NỀN. BẠN LÀ CẢM HỨNG.</span>
+          </div>
+
+          <!-- Decorative Arch Lines & Geometry in background -->
+          <div class="absolute inset-x-8 top-12 bottom-20 rounded-full border border-nep-grayLight/40 pointer-events-none -z-0"></div>
+          <div class="absolute inset-x-16 top-20 bottom-24 rounded-full border border-nep-grayLight/30 pointer-events-none -z-0"></div>
+
+          <!-- Floating Sticky Badge 01 (Top Right) -->
+          <div class="absolute top-6 right-4 sm:right-6 z-20 transform rotate-3">
+            <a href="{% url 'studio:index' %}" class="inline-flex items-center gap-1.5 bg-nep-green text-nep-cream px-3.5 py-1.5 rounded-lg text-xs font-semibold shadow-md hover:scale-105 transition">
+              <span>chậm một nhịp.</span>
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+            </a>
+          </div>
+
+          <!-- Floating Sticky Badge 02 (Top Left) -->
+          <div class="absolute top-20 -left-2 sm:left-4 z-20 transform -rotate-6 bg-white border border-nep-grayLight/80 px-4 py-2 rounded-xl shadow-md">
+            <span class="block text-[9px] font-semibold text-nep-gray uppercase tracking-wider">nét chữ / 01</span>
+            <span class="text-sm font-serif font-bold text-nep-dark">là mình.</span>
+          </div>
+
+          <!-- Floating Sticky Badge 03 (Bottom Right) -->
+          <div class="absolute bottom-28 -right-2 sm:right-4 z-20 transform rotate-6 bg-[#D4E157] text-nep-dark px-4 py-2.5 rounded-xl shadow-md font-bold">
+            <span class="block text-[9px] font-bold text-nep-dark/70 uppercase tracking-wider">bật mình / 02</span>
+            <span class="text-xs font-bold tracking-tight">NẾP CLUB *</span>
+          </div>
+
+          <!-- Center Shirt Mockup -->
+          <div class="relative z-10 w-full max-w-[340px] mx-auto py-2 transition-all duration-300">
+            
+            <!-- SVG Shirt with dynamic color fill -->
+            <div class="relative drop-shadow-xl"
+                 :style="`--shirt-color: ${colors[shirtColor].hex}; --collar-color: ${colors[shirtColor].collar}; --inner-neck: ${colors[shirtColor].inner}; --collar-stroke: ${colors[shirtColor].stroke}; --stitch-color: ${colors[shirtColor].stitch};`">
+              
+              <div x-show="side === 'front'" class="w-full h-auto">
+                {% include 'components/mockup_front.html' %}
+              </div>
+              <div x-show="side === 'back'" class="w-full h-auto">
+                {% include 'components/mockup_back.html' %}
+              </div>
+
+              <!-- Chest Design Overlay -->
+              <div class="absolute inset-x-0 top-[26%] flex flex-col items-center justify-center text-center px-8 pointer-events-none select-none transition-colors duration-300"
+                   :style="`color: ${colors[shirtColor].text}`">
+                <template x-if="side === 'front'">
+                  <div class="space-y-1">
+                    <p class="text-xl sm:text-2xl font-serif font-bold tracking-tight">chậm<br>một nhịp.</p>
+                    <p class="text-[9px] uppercase tracking-widest opacity-60">CỨ LÀ MÌNH / NẾP STUDIO</p>
+                  </div>
+                </template>
+                <template x-if="side === 'back'">
+                  <div class="space-y-1">
+                    <div class="w-6 h-6 mx-auto mb-1 opacity-70">
+                      <svg viewBox="0 0 100 100" fill="currentColor">
+                        <circle cx="50" cy="50" r="14" fill="#E5C158"/>
+                        <path d="M50 12C55 12 58 24 50 32C42 24 45 12 50 12Z"/>
+                        <path d="M50 88C45 88 42 76 50 68C58 76 55 88 50 88Z"/>
+                        <path d="M12 50C12 45 24 42 32 50C24 58 12 55 12 50Z"/>
+                        <path d="M88 50C88 55 76 58 68 50C76 42 88 45 88 50Z"/>
+                      </svg>
+                    </div>
+                    <p class="text-xs font-serif font-semibold tracking-wider">nếp form.</p>
+                  </div>
+                </template>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Bottom Control Bar (matching Image 3) -->
+          <div class="relative z-20 pt-4 flex flex-wrap items-center justify-between gap-3 border-t border-nep-grayLight/60">
+            
+            <!-- Color Selector Dots -->
+            <div class="flex items-center gap-2">
+              <button type="button" @click="shirtColor = 'kem'" class="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center transition shadow-xs" style="background-color: #F5F0E8;" title="Màu Kem">
+                <svg x-show="shirtColor === 'kem'" class="w-3.5 h-3.5 text-nep-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+              </button>
+              <button type="button" @click="shirtColor = 'den'" class="w-6 h-6 rounded-full border border-gray-800 flex items-center justify-center transition shadow-xs" style="background-color: #1C1C1C;" title="Màu Đen">
+                <svg x-show="shirtColor === 'den'" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+              </button>
+              <button type="button" @click="shirtColor = 'reu'" class="w-6 h-6 rounded-full border border-green-900 flex items-center justify-center transition shadow-xs" style="background-color: #5E6E49;" title="Màu Xanh rêu">
+                <svg x-show="shirtColor === 'reu'" class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+              </button>
+              <span class="text-xs font-medium text-nep-gray ml-1" x-text="colors[shirtColor].name"></span>
+            </div>
+
+            <!-- Front / Back Toggle Buttons -->
+            <div class="flex items-center bg-white rounded-full p-1 border border-nep-grayLight shadow-xs text-xs font-medium">
+              <button type="button" @click="side = 'front'" :class="side === 'front' ? 'bg-nep-dark text-white' : 'text-nep-gray hover:text-nep-dark'" class="px-3 py-1 rounded-full transition">Trước</button>
+              <button type="button" @click="side = 'back'" :class="side === 'back' ? 'bg-nep-dark text-white' : 'text-nep-gray hover:text-nep-dark'" class="px-3 py-1 rounded-full transition">Sau</button>
+            </div>
+
+          </div>
+
+          <!-- Footer link under card -->
+          <div class="text-right pt-3">
+            <a href="{% url 'studio:index' %}" class="inline-flex items-center gap-1 text-xs text-nep-gray hover:text-nep-dark transition font-medium">
+              <span>Một ý tưởng mẫu từ Nếp Studio</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3-STEP PROCESS SECTION ================= -->
+<section id="quy-trinh" class="py-16 bg-white border-y border-nep-grayLight">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// QUY TRÌNH NẾP FORM</span>
+      <h2 class="text-3xl sm:text-4xl font-serif font-bold text-nep-dark mt-2 tracking-tight">Chiếc áo độc bản trong 3 bước</h2>
+      <p class="text-sm text-nep-gray mt-2">Đơn giản, trực quan và không giới hạn trí tưởng tượng của bạn.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- Step 1 -->
+      <div class="bg-nep-cream rounded-2xl p-8 border border-nep-grayLight/80 relative group hover:shadow-md transition">
+        <span class="text-4xl font-serif font-bold text-nep-greenMuted/30 mb-4 block">01</span>
+        <h3 class="text-lg font-bold text-nep-dark mb-2">Chọn phôi áo tuyển chọn</h3>
+        <p class="text-xs text-nep-gray leading-relaxed mb-4">
+          Phom Classic unisex, thun oversize vai trễ hay polo Pique. Vải 100% cotton 240gsm đanh mịn, chuẩn tỉ lệ người Việt.
+        </p>
+        <div class="text-xs font-semibold text-nep-green flex items-center gap-1">
+          <span>Khám phá các chất liệu</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bg-nep-cream rounded-2xl p-8 border border-nep-grayLight/80 relative group hover:shadow-md transition">
+        <span class="text-4xl font-serif font-bold text-nep-greenMuted/30 mb-4 block">02</span>
+        <h3 class="text-lg font-bold text-nep-dark mb-2">Tùy biến với Nếp Studio</h3>
+        <p class="text-xs text-nep-gray leading-relaxed mb-4">
+          Thêm câu chữ tâm đắc, sticker vector nghệ thuật hoặc tải lên bức vẽ riêng. Xem trực tiếp áo mặt trước và sau thời gian thực.
+        </p>
+        <a href="{% url 'studio:index' %}" class="text-xs font-semibold text-nep-green flex items-center gap-1">
+          <span>Mở studio thiết kế</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bg-nep-cream rounded-2xl p-8 border border-nep-grayLight/80 relative group hover:shadow-md transition">
+        <span class="text-4xl font-serif font-bold text-nep-greenMuted/30 mb-4 block">03</span>
+        <h3 class="text-lg font-bold text-nep-dark mb-2">Nếp in ấn & trao tận tay</h3>
+        <p class="text-xs text-nep-gray leading-relaxed mb-4">
+          Công nghệ in DTG kỹ thuật số cao cấp thấm sâu sợi vải, sắc nét từng chi tiết và độ bền trên 100 lần giặt. Giao hàng toàn quốc.
+        </p>
+        <div class="text-xs font-semibold text-nep-green flex items-center gap-1">
+          <span>Cam kết chất lượng</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= FEATURED TEMPLATES (INSPIRATION) ================= -->
+<section class="py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-12 gap-4">
+      <div>
+        <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// CẢM HỨNG TỪ NẾP</span>
+        <h2 class="text-3xl sm:text-4xl font-serif font-bold text-nep-dark mt-1 tracking-tight">Mẫu áo được yêu thích nhất</h2>
+      </div>
+      <a href="{% url 'products:catalog' %}" class="inline-flex items-center gap-1 text-sm font-semibold text-nep-dark hover:text-nep-green transition underline">
+        <span>Xem toàn bộ kho mẫu</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </a>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      {% for t in featured_templates %}
+        <div class="bg-white rounded-3xl p-6 border border-nep-grayLight shadow-xs hover:shadow-md transition group flex flex-col justify-between">
+          <div>
+            <div class="aspect-4/3 rounded-2xl bg-nep-cream flex items-center justify-center p-6 mb-5 relative overflow-hidden group-hover:scale-[1.02] transition-transform">
+              <span class="text-xs font-semibold tracking-wider text-nep-gray uppercase absolute top-4 left-4">{{ t.category.name }}</span>
+              <div class="text-center">
+                <p class="text-2xl font-serif font-bold text-nep-dark tracking-tight">{{ t.name }}</p>
+                {% if t.slogan %}
+                  <p class="text-xs text-nep-greenMuted font-medium mt-1 uppercase tracking-widest">{{ t.slogan }}</p>
+                {% endif %}
+              </div>
+            </div>
+            <h3 class="font-bold text-nep-dark text-base">{{ t.name }}</h3>
+            <p class="text-xs text-nep-gray mt-1">Gợi ý phong cách: {{ t.tags|default:"Tối giản, cá tính" }}</p>
+          </div>
+          <div class="pt-6 mt-6 border-t border-gray-100 flex items-center justify-between">
+            <span class="text-xs font-semibold text-nep-dark">Phôi áo Classic 100% Cotton</span>
+            <a href="{% url 'studio:index' %}?template_id={{ t.id }}" class="inline-flex items-center gap-1 bg-nep-cream hover:bg-nep-dark hover:text-white text-nep-dark px-3 py-1.5 rounded-full text-xs font-semibold transition">
+              <span>Tùy biến mẫu này</span>
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= NẾP CLUB BANNER ================= -->
+<section class="py-12 bg-nep-green text-nep-cream">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+      <div class="md:col-span-8 space-y-3">
+        <span class="bg-nep-gold text-nep-dark text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">NẾP CLUB LOYALTY</span>
+        <h2 class="text-3xl sm:text-4xl font-serif font-bold tracking-tight">Tích điểm từng chiếc áo, nâng hạng đặc quyền</h2>
+        <p class="text-sm text-nep-cream/80 max-w-2xl leading-relaxed">
+          Tích 1 điểm cho mỗi 1.000₫ thanh toán. Nâng hạng Bạc - Vàng để nhận ưu đãi giảm tới 10% trọn đời và đặc quyền đặt mẫu thiết kế giới hạn.
+        </p>
+      </div>
+      <div class="md:col-span-4 flex md:justify-end">
+        <a href="{% url 'loyalty:club' %}" class="bg-nep-cream hover:bg-white text-nep-dark px-6 py-3.5 rounded-full text-sm font-bold shadow-lg transition flex items-center gap-2">
+          <span>Khám phá Nếp Club</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ SECTION ================= -->
+<section class="py-20 bg-nep-cream">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// BẠN ĐANG BĂN KHOĂN?</span>
+      <h2 class="text-3xl font-serif font-bold text-nep-dark mt-1">Câu hỏi thường gặp</h2>
+    </div>
+
+    <div class="space-y-4" x-data="{ active: null }">
+      {% for f in faqs %}
+        <div class="bg-white rounded-2xl border border-nep-grayLight overflow-hidden">
+          <button @click="active = active === {{ forloop.counter }} ? null : {{ forloop.counter }}" class="w-full px-6 py-4 text-left flex justify-between items-center text-sm font-bold text-nep-dark hover:bg-nep-creamLight/50 transition">
+            <span>{{ f.question }}</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 transform transition-transform" :class="active === {{ forloop.counter }} ? 'rotate-180' : ''"></i>
+          </button>
+          <div x-show="active === {{ forloop.counter }}" x-cloak class="px-6 pb-5 pt-1 text-xs text-nep-gray leading-relaxed border-t border-gray-100">
+            {{ f.answer }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

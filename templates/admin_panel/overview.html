@@ -1,0 +1,184 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Tổng quan KPI — Quản Trị Nếp Form{% endblock %}
+{% block header_title %}Tổng quan Hoạt động Kinh doanh{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl">
+  
+  <!-- 1. KPI Cards Row -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    
+    <!-- Revenue -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Tổng doanh thu</span>
+        <span class="text-2xl font-bold text-nep-green tracking-tight">{{ total_revenue|floatformat:0 }}₫</span>
+        <span class="text-[10px] text-emerald-600 block mt-1 font-medium">Đơn hàng đã xác nhận & hoàn tất</span>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+        <i data-lucide="trending-up" class="w-6 h-6"></i>
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Đơn đặt áo</span>
+        <span class="text-2xl font-bold text-gray-900 tracking-tight">{{ total_orders }} đơn</span>
+        <span class="text-[10px] text-amber-600 block mt-1 font-medium">{{ pending_orders }} chờ xử lý • {{ processing_orders }} đang in</span>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+        <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Dòng phôi áo</span>
+        <span class="text-2xl font-bold text-gray-900 tracking-tight">{{ total_products }} mẫu</span>
+        <span class="text-[10px] text-gray-400 block mt-1 font-medium">Cotton 100% 240gsm</span>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+        <i data-lucide="shirt" class="w-6 h-6"></i>
+      </div>
+    </div>
+
+    <!-- Members -->
+    <div class="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Nếp Club</span>
+        <span class="text-2xl font-bold text-gray-900 tracking-tight">{{ total_users }} thành viên</span>
+        <span class="text-[10px] text-nep-gold block mt-1 font-medium">Hệ thống tích điểm tự động</span>
+      </div>
+      <div class="w-12 h-12 rounded-2xl bg-nep-cream text-nep-gold flex items-center justify-center">
+        <i data-lucide="award" class="w-6 h-6"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 2. Main Two Column Layout: Recent Orders & Stock Warnings -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Recent Orders (8 cols) -->
+    <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-base font-bold text-gray-900 tracking-tight">Đơn hàng cần xử lý</h2>
+          <p class="text-xs text-gray-500">Các đơn áo mới được đặt từ khách hàng</p>
+        </div>
+        <a href="{% url 'admin_panel:orders' %}" class="text-xs font-bold text-nep-green hover:underline flex items-center gap-1">
+          <span>Xem tất cả</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+              <th class="pb-3">Mã đơn</th>
+              <th class="pb-3">Khách hàng</th>
+              <th class="pb-3">Tổng tiền</th>
+              <th class="pb-3">Thanh toán</th>
+              <th class="pb-3">Trạng thái</th>
+              <th class="pb-3 text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for o in recent_orders %}
+              <tr class="hover:bg-gray-50/80 transition">
+                <td class="py-3.5 font-mono font-bold text-nep-dark">#{{ o.order_code }}</td>
+                <td class="py-3.5">
+                  <p class="font-bold text-gray-900">{{ o.customer_name }}</p>
+                  <p class="text-[10px] text-gray-500">{{ o.customer_phone }}</p>
+                </td>
+                <td class="py-3.5 font-bold text-nep-green">{{ o.total_amount|floatformat:0 }}₫</td>
+                <td class="py-3.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold {% if o.payment_status == 'PAID' %}bg-emerald-100 text-emerald-800{% else %}bg-gray-100 text-gray-700{% endif %}">
+                    {{ o.get_payment_method_display|slice:":12" }}
+                  </span>
+                </td>
+                <td class="py-3.5">
+                  <span class="px-2.5 py-1 rounded-full text-[10px] font-bold {% if o.order_status == 'COMPLETED' %}bg-emerald-100 text-emerald-800{% elif o.order_status == 'CANCELLED' %}bg-red-100 text-red-800{% else %}bg-amber-100 text-amber-800{% endif %}">
+                    {{ o.get_order_status_display }}
+                  </span>
+                </td>
+                <td class="py-3.5 text-right">
+                  <a href="{% url 'admin_panel:order_detail' o.order_code %}" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-nep-dark hover:text-white rounded-lg text-xs font-semibold transition">
+                    <span>Xem & Duyệt</span>
+                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="py-8 text-center text-gray-400">Chưa có đơn hàng nào phát sinh.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Low Stock Warnings & Quick Links (4 cols) -->
+    <div class="lg:col-span-4 space-y-6">
+      
+      <!-- Low Stock Alert Box -->
+      <div class="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+            <h3 class="text-sm font-bold text-gray-900">Cảnh báo tồn kho</h3>
+          </div>
+          <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">≤ 15 cái</span>
+        </div>
+
+        <div class="divide-y divide-gray-100">
+          {% for v in low_stock_variants %}
+            <div class="py-2.5 flex items-center justify-between text-xs">
+              <div>
+                <p class="font-bold text-gray-800">{{ v.product.name }}</p>
+                <p class="text-[10px] text-gray-500">Màu {{ v.color.name }} / Size {{ v.size.name }}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700">
+                Còn {{ v.stock_quantity }}
+              </span>
+            </div>
+          {% empty %}
+            <p class="py-4 text-xs text-gray-400 text-center">Tồn kho các biến thể đều an toàn.</p>
+          {% endfor %}
+        </div>
+
+        <a href="{% url 'admin_panel:products' %}" class="block mt-4 text-center py-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-xs font-bold text-gray-700 transition">
+          Cập nhật kho hàng
+        </a>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div class="bg-nep-cream rounded-3xl p-6 border border-nep-grayLight/80">
+        <h3 class="text-sm font-serif font-bold text-nep-dark mb-2">Thao tác nhanh cho xưởng</h3>
+        <p class="text-xs text-nep-gray leading-relaxed mb-4">
+          Bạn có thể thêm mẫu thiết kế mới vào Studio hoặc tạo coupon khuyến mãi giảm giá trực tiếp.
+        </p>
+
+        <div class="space-y-2">
+          <a href="{% url 'admin_panel:templates' %}" class="flex items-center justify-between px-4 py-2.5 bg-white hover:bg-nep-dark hover:text-white rounded-xl text-xs font-bold text-nep-dark transition shadow-xs group">
+            <span>+ Thêm mẫu áo vào Studio</span>
+            <i data-lucide="palette" class="w-4 h-4 group-hover:translate-x-0.5 transition-transform"></i>
+          </a>
+          <a href="{% url 'admin_panel:coupons' %}" class="flex items-center justify-between px-4 py-2.5 bg-white hover:bg-nep-dark hover:text-white rounded-xl text-xs font-bold text-nep-dark transition shadow-xs group">
+            <span>+ Tạo mã giảm giá mới</span>
+            <i data-lucide="ticket" class="w-4 h-4 group-hover:translate-x-0.5 transition-transform"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Về Nếp — Xưởng áo & Câu chuyện thương hiệu{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  
+  <div class="text-center mb-16">
+    <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// CÂU CHUYỆN THƯƠNG HIỆU</span>
+    <h1 class="text-4xl sm:text-5xl font-serif font-bold text-nep-dark mt-2 tracking-tight">Một nếp áo. Một nét riêng.</h1>
+    <p class="text-sm text-nep-gray mt-4 max-w-xl mx-auto leading-relaxed">
+      Nếp Form ra đời từ niềm tin rằng: chiếc áo bạn mặc mỗi ngày không nên chỉ là một sản phẩm sản xuất hàng loạt vô danh.
+    </p>
+  </div>
+
+  <div class="space-y-12 text-sm text-nep-dark/85 leading-relaxed bg-white rounded-3xl p-8 sm:p-12 border border-nep-grayLight shadow-xs">
+    
+    <div>
+      <h2 class="text-2xl font-serif font-bold text-nep-dark mb-3">Tỉ mỉ từ sợi bông đến thớ vải</h2>
+      <p>
+        Tại xưởng Nếp, chúng mình tuyển chọn dòng sợi 100% Cotton chải kỹ tự nhiên với định lượng 240gsm. Độ dày vừa vặn giữ được phom áo đứng cá tính nhưng vẫn đảm bảo độ thông thoáng, thấm hút mồ hôi tối đa trong khí hậu nhiệt đới Việt Nam. Mọi mét vải trước khi may đều được xử lý chống co rút tiêu chuẩn xưởng.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-2xl font-serif font-bold text-nep-dark mb-3">Công nghệ in kỹ thuật số DTG</h2>
+      <p>
+        Khác với in lụa hay ép nhiệt thông thường dễ bong tróc, Nếp đầu tư dàn máy in Direct-to-Garment (DTG) công nghiệp của Nhật Bản. Hạt mực gốc nước siêu mịn được phun trực tiếp và ngấm sâu vào từng thớ sợi cotton, cho phép thể hiện chuyển màu gradient mềm mại, sắc nét tới từng nét chữ nhỏ và bền bỉ qua hơn 100 lần giặt máy.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-2xl font-serif font-bold text-nep-dark mb-3">Tôn trọng cá tính của người mặc</h2>
+      <p>
+        Studio thiết kế trực quan của Nếp trao quyền sáng tạo trọn vẹn vào tay bạn. Dù là một câu châm ngôn bạn tâm đắc, một bức ký họa tay hay biểu tượng của nhóm bạn thân — Nếp sẽ biến ý tưởng ấy thành hiện thực trên chiếc áo bạn khoác lên người.
+      </p>
+    </div>
+
+    <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div>
+        <p class="font-serif font-bold text-base text-nep-dark">Nếp Form Studio</p>
+        <p class="text-xs text-nep-gray">Xưởng may & In ấn cá nhân hóa hàng đầu</p>
+      </div>
+      <a href="{% url 'studio:index' %}" class="bg-nep-dark hover:bg-nep-darkSoft text-white px-6 py-3 rounded-full text-xs font-semibold shadow-xs transition">
+        Bắt đầu thiết kế áo của bạn ↗
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

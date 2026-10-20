@@ -1,0 +1,165 @@
+{% extends 'admin_panel/base_admin.html' %}
+{% load static %}
+
+{% block title %}Chi tiết đơn #{{ order.order_code }} — Quản Trị Nếp Form{% endblock %}
+{% block header_title %}Đơn Hàng #{{ order.order_code }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl space-y-8">
+  
+  <div class="flex items-center gap-3">
+    <a href="{% url 'admin_panel:orders' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-900 transition">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>Quay lại danh sách đơn</span>
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left Column: Items & Printing Specs (8 cols) -->
+    <div class="lg:col-span-8 space-y-6">
+      
+      <!-- Ordered Items Box -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+        <h2 class="text-base font-bold text-gray-900 pb-4 border-b border-gray-100 flex items-center justify-between">
+          <span>Danh sách áo đặt in</span>
+          <span class="text-xs font-normal text-gray-500">{{ order.items.count }} mẫu áo</span>
+        </h2>
+
+        <div class="divide-y divide-gray-100">
+          {% for it in order.items.all %}
+            <div class="py-6 flex flex-col sm:flex-row gap-6 items-start">
+              
+              <!-- Shirt Visual Preview -->
+              <div class="w-28 h-32 rounded-2xl bg-nep-cream flex items-center justify-center p-3 relative shrink-0 border border-nep-grayLight">
+                {% if it.design and it.design.preview_front %}
+                  <img src="{{ it.design.preview_front }}" alt="Preview" class="w-full h-full object-contain">
+                {% else %}
+                  <div class="w-full h-full" style="--shirt-color: {{ it.variant.color.hex_code|default:'#F5F0E8' }};">
+                    {% include 'components/mockup_front.html' %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Specs -->
+              <div class="flex-grow space-y-2">
+                <div class="flex justify-between items-baseline">
+                  <h3 class="text-sm font-bold text-gray-900">{{ it.product_name }}</h3>
+                  <span class="text-sm font-bold text-nep-green">{{ it.subtotal|floatformat:0 }}₫</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <p>Màu áo: <strong class="text-gray-900">{{ it.color_name }}</strong></p>
+                  <p>Size áo: <strong class="text-gray-900">{{ it.size_name }}</strong></p>
+                  <p>Số lượng: <strong class="text-gray-900">{{ it.quantity }} cái</strong></p>
+                  <p>Khổ in trước: <strong class="text-gray-900">{{ it.print_zone_front_name|default:"Tiêu chuẩn" }}</strong></p>
+                </div>
+
+                {% if it.design %}
+                  <div class="pt-2 flex items-center gap-2">
+                    <a href="{% url 'studio:index' %}?design_id={{ it.design.id }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-nep-cream hover:bg-gray-200 text-nep-dark rounded-lg text-xs font-semibold transition">
+                      <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                      <span>Mở bản vẽ Studio</span>
+                    </a>
+                  </div>
+                {% endif %}
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Customer & Shipping Note -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-4">
+        <h2 class="text-base font-bold text-gray-900 pb-3 border-b border-gray-100">Thông tin giao hàng</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div>
+            <span class="text-gray-400 block mb-0.5">Người nhận:</span>
+            <span class="font-bold text-gray-900 text-sm">{{ order.customer_name }}</span>
+          </div>
+          <div>
+            <span class="text-gray-400 block mb-0.5">Số điện thoại:</span>
+            <span class="font-bold text-gray-900 text-sm">{{ order.customer_phone }}</span>
+          </div>
+          <div class="sm:col-span-2">
+            <span class="text-gray-400 block mb-0.5">Địa chỉ nhận áo:</span>
+            <span class="font-semibold text-gray-800">{{ order.shipping_address }}</span>
+          </div>
+          {% if order.note %}
+            <div class="sm:col-span-2 bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900">
+              <span class="font-bold block mb-0.5">Ghi chú của khách:</span>
+              <p>{{ order.note }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Status Transition Form (4 cols) -->
+    <div class="lg:col-span-4 space-y-6">
+      
+      <!-- Status Management Form -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs">
+        <h3 class="text-base font-bold text-gray-900 pb-4 border-b border-gray-100">Cập nhật đơn hàng</h3>
+
+        <form method="POST" class="space-y-4 pt-4">
+          {% csrf_token %}
+          
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Trạng thái xử lý đơn</label>
+            <select name="order_status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:border-nep-green">
+              {% for code, label in status_choices %}
+                <option value="{{ code }}" {% if order.order_status == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Trạng thái thanh toán</label>
+            <select name="payment_status" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:border-nep-green">
+              {% for code, label in payment_status_choices %}
+                <option value="{{ code }}" {% if order.payment_status == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-nep-dark hover:bg-gray-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs">
+            Lưu thay đổi
+          </button>
+        </form>
+
+      </div>
+
+      <!-- Financial Summary -->
+      <div class="bg-nep-cream rounded-3xl p-6 border border-nep-grayLight space-y-3 text-xs">
+        <h4 class="font-serif font-bold text-nep-dark text-sm pb-2 border-b border-nep-grayLight">Chi tiết thanh toán</h4>
+        
+        <div class="flex justify-between text-gray-600">
+          <span>Tiền áo & in:</span>
+          <span class="font-bold text-gray-900">{{ order.subtotal|floatformat:0 }}₫</span>
+        </div>
+        {% if order.discount_amount > 0 %}
+          <div class="flex justify-between text-emerald-600">
+            <span>Giảm giá ({{ order.coupon_code }}):</span>
+            <span class="font-bold">-{{ order.discount_amount|floatformat:0 }}₫</span>
+          </div>
+        {% endif %}
+        <div class="flex justify-between text-gray-600">
+          <span>Phí giao hàng:</span>
+          <span class="font-bold text-gray-900">{{ order.shipping_fee|floatformat:0 }}₫</span>
+        </div>
+        <div class="flex justify-between text-sm font-bold text-nep-dark pt-2 border-t border-nep-grayLight">
+          <span>Tổng đơn:</span>
+          <span class="text-nep-green text-base">{{ order.total_amount|floatformat:0 }}₫</span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

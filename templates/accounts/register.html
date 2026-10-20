@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Đăng ký thành viên — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-16">
+  
+  <div class="bg-white rounded-3xl p-8 border border-nep-grayLight shadow-xs">
+    
+    <div class="text-center mb-8">
+      <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// GIA NHẬP NẾP CLUB</span>
+      <h1 class="text-2xl font-serif font-bold text-nep-dark mt-1">Tạo tài khoản mới</h1>
+      <p class="text-xs text-nep-gray mt-1">Nhận ngay 20 điểm thưởng Nếp Club và ưu đãi thành viên.</p>
+    </div>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Họ và tên</label>
+        <input type="text" name="full_name" required placeholder="VD: Trần Hoàng" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Email</label>
+        <input type="email" name="email" required placeholder="hoang@example.com" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Số điện thoại</label>
+        <input type="tel" name="phone" placeholder="0912345678" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Mật khẩu</label>
+        <input type="password" name="password" required placeholder="Tối thiểu 6 ký tự" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Xác nhận mật khẩu</label>
+        <input type="password" name="confirm_password" required placeholder="Nhập lại mật khẩu" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Mã giới thiệu từ bạn bè (nếu có)</label>
+        <input type="text" name="referral_code" placeholder="Mã gồm 8 ký tự (VD: A1B2C3D4)" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium uppercase focus:outline-none focus:border-nep-green">
+      </div>
+
+      <button type="submit" class="w-full py-3.5 bg-nep-dark hover:bg-nep-darkSoft text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm">
+        Đăng ký thành viên
+      </button>
+    </form>
+
+    <div class="mt-8 pt-6 border-t border-gray-100 text-center text-xs text-nep-gray">
+      <span>Đã có tài khoản?</span>
+      <a href="{% url 'accounts:login' %}" class="font-bold text-nep-dark hover:underline ml-1">Đăng nhập</a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

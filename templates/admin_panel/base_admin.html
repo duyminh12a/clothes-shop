@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Bảng Quản Trị — Nếp Form{% endblock %}</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            nep: {
+              cream: '#F5F0E8',
+              green: '#2D3A2E',
+              greenMuted: '#647746',
+              dark: '#1A1A1A',
+              gold: '#C4A35A',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full flex overflow-hidden text-gray-800">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-nep-dark text-white flex flex-col shrink-0 z-30">
+    
+    <!-- Brand -->
+    <div class="h-20 flex items-center px-6 border-b border-white/10 gap-2">
+      <a href="{% url 'admin_panel:overview' %}" class="flex items-center gap-2">
+        <span class="text-2xl font-serif font-bold text-nep-cream tracking-tight">nếp form.</span>
+        <span class="text-[9px] font-bold bg-nep-green text-nep-cream px-2 py-0.5 rounded-full uppercase tracking-wider">ADMIN</span>
+      </a>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex-grow px-4 py-6 space-y-1.5 overflow-y-auto text-xs font-semibold">
+      
+      <a href="{% url 'admin_panel:overview' %}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {% if active_menu == 'overview' %}bg-white/15 text-white font-bold{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+        <span>Tổng quan KPI</span>
+      </a>
+
+      <a href="{% url 'admin_panel:orders' %}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {% if active_menu == 'orders' %}bg-white/15 text-white font-bold{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+        <span>Quản lý Đơn hàng</span>
+      </a>
+
+      <a href="{% url 'admin_panel:products' %}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {% if active_menu == 'products' %}bg-white/15 text-white font-bold{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+        <i data-lucide="shirt" class="w-4 h-4"></i>
+        <span>Sản phẩm & Tồn kho</span>
+      </a>
+
+      <a href="{% url 'admin_panel:coupons' %}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {% if active_menu == 'coupons' %}bg-white/15 text-white font-bold{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+        <i data-lucide="ticket" class="w-4 h-4"></i>
+        <span>Mã giảm giá (Coupon)</span>
+      </a>
+
+      <a href="{% url 'admin_panel:templates' %}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {% if active_menu == 'templates' %}bg-white/15 text-white font-bold{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+        <i data-lucide="palette" class="w-4 h-4"></i>
+        <span>Kho mẫu Studio</span>
+      </a>
+
+      <a href="{% url 'admin_panel:settings' %}" class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {% if active_menu == 'settings' %}bg-white/15 text-white font-bold{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+        <i data-lucide="sliders" class="w-4 h-4"></i>
+        <span>Banner & Hộp thư</span>
+      </a>
+
+      <div class="pt-6 pb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+        Liên kết nâng cao
+      </div>
+
+      <a href="/admin/" target="_blank" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition">
+        <i data-lucide="database" class="w-4 h-4 text-nep-gold"></i>
+        <span>Django Admin Gốc ↗</span>
+      </a>
+
+      <a href="{% url 'core:home' %}" target="_blank" class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition">
+        <i data-lucide="globe" class="w-4 h-4 text-emerald-400"></i>
+        <span>Xem Website Khách ↗</span>
+      </a>
+
+    </nav>
+
+    <!-- Admin User Info -->
+    <div class="p-4 border-t border-white/10 flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2.5 overflow-hidden">
+        <div class="w-8 h-8 rounded-full bg-nep-green text-nep-cream flex items-center justify-center font-bold uppercase shrink-0">
+          {{ user.username|slice:":1" }}
+        </div>
+        <div class="truncate">
+          <p class="font-bold text-white truncate">{{ user.get_full_name|default:user.username }}</p>
+          <p class="text-[10px] text-gray-400">Quản trị viên</p>
+        </div>
+      </div>
+      <a href="{% url 'accounts:logout' %}" class="text-gray-400 hover:text-red-400 p-1.5 transition" title="Đăng xuất">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </a>
+    </div>
+
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="flex-grow flex flex-col h-full overflow-hidden">
+    
+    <!-- Top Header -->
+    <header class="h-20 bg-white border-b border-gray-200 px-8 flex items-center justify-between shrink-0">
+      <div>
+        <h1 class="text-lg font-bold text-gray-900 tracking-tight">{% block header_title %}Bảng Quản Trị Hệ Thống{% endblock %}</h1>
+        <p class="text-xs text-gray-500 mt-0.5">Xưởng áo & Nền tảng thiết kế Nếp Form</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="{% url 'studio:index' %}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 px-3.5 py-2 rounded-xl text-xs font-semibold transition">
+          <i data-lucide="palette" class="w-3.5 h-3.5"></i>
+          <span>Mở Studio</span>
+        </a>
+        <a href="{% url 'admin_panel:product_create' %}" class="inline-flex items-center gap-1.5 bg-nep-dark hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-xs transition">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Thêm sản phẩm</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% if messages %}
+      <div class="px-8 pt-4 space-y-2">
+        {% for message in messages %}
+          <div class="px-4 py-3 rounded-xl text-xs flex items-center justify-between shadow-xs {% if message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="text-xs font-bold">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Page Body Scrollable -->
+    <main class="flex-grow overflow-y-auto p-8">
+      {% block content %}{% endblock %}
+    </main>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      lucide.createIcons();
+    });
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

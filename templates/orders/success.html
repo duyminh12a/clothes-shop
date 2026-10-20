@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Đặt hàng thành công — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+  
+  <!-- Success Icon -->
+  <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+    <i data-lucide="check-circle-2" class="w-10 h-10"></i>
+  </div>
+
+  <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// ĐƠN HÀNG ĐÃ ĐƯỢC TIẾP NHẬN</span>
+  <h1 class="text-3xl sm:text-4xl font-serif font-bold text-nep-dark mt-1 tracking-tight">Cảm ơn bạn đã tin chọn Nếp!</h1>
+  <p class="text-xs text-nep-gray mt-2 max-w-md mx-auto">
+    Mã đơn hàng của bạn là <strong class="text-nep-dark font-mono text-sm">#{{ order.order_code }}</strong>. Xưởng may Nếp đang chuẩn bị phôi áo và chuẩn hóa file in cho bạn.
+  </p>
+
+  <!-- VietQR Bank Transfer Card (if Bank or Online) -->
+  {% if order.payment_method == 'BANK' %}
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs mt-8 text-left max-w-lg mx-auto">
+      <div class="flex items-center gap-3 pb-4 border-b border-gray-100">
+        <i data-lucide="qr-code" class="w-6 h-6 text-nep-green"></i>
+        <div>
+          <h3 class="text-sm font-bold text-nep-dark">Quét mã VietQR để thanh toán</h3>
+          <p class="text-[11px] text-nep-gray">Đơn hàng sẽ tự động chuyển trạng thái ngay khi xưởng nhận được tiền.</p>
+        </div>
+      </div>
+
+      <div class="py-6 flex flex-col items-center">
+        <!-- Live VietQR Code -->
+        <div class="p-3 bg-white rounded-2xl border border-gray-200 shadow-xs mb-4">
+          <img src="https://img.vietqr.io/image/MB-0987654321-compact2.png?amount={{ order.total_amount|floatformat:0 }}&addInfo=NEP%20{{ order.order_code }}&accountName=NEP%20FORM%20STUDIO" alt="VietQR" class="w-56 h-auto">
+        </div>
+
+        <div class="w-full space-y-2 text-xs">
+          <div class="flex justify-between py-1 border-b border-gray-100">
+            <span class="text-nep-gray">Ngân hàng:</span>
+            <span class="font-bold text-nep-dark">MB Bank (Quân Đội)</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-gray-100">
+            <span class="text-nep-gray">Số tài khoản:</span>
+            <span class="font-mono font-bold text-nep-dark">0987654321</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-gray-100">
+            <span class="text-nep-gray">Chủ tài khoản:</span>
+            <span class="font-bold text-nep-dark">NẾP FORM STUDIO</span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-gray-100">
+            <span class="text-nep-gray">Số tiền:</span>
+            <span class="font-bold text-nep-green text-sm">{{ order.total_amount|floatformat:0 }}₫</span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-nep-gray">Nội dung chuyển khoản:</span>
+            <span class="font-mono font-bold text-nep-dark bg-nep-cream px-2 py-0.5 rounded">NEP {{ order.order_code }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Order Details Box -->
+  <div class="bg-white rounded-3xl p-6 sm:p-8 border border-nep-grayLight shadow-xs mt-8 text-left max-w-xl mx-auto space-y-4">
+    <h3 class="text-sm font-bold text-nep-dark pb-3 border-b border-gray-100">Tóm tắt đơn đặt</h3>
+    
+    <div class="space-y-2 text-xs">
+      <div class="flex justify-between">
+        <span class="text-nep-gray">Người nhận:</span>
+        <span class="font-semibold text-nep-dark">{{ order.customer_name }} ({{ order.customer_phone }})</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-nep-gray">Địa chỉ giao:</span>
+        <span class="font-semibold text-nep-dark text-right max-w-[280px]">{{ order.shipping_address }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-nep-gray">Hình thức thanh toán:</span>
+        <span class="font-semibold text-nep-dark">{{ order.get_payment_method_display }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-nep-gray">Trạng thái đơn:</span>
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">{{ order.get_order_status_display }}</span>
+      </div>
+    </div>
+
+    <div class="pt-3 border-t border-gray-100 flex justify-between items-center text-sm font-bold text-nep-dark">
+      <span>Tổng thanh toán:</span>
+      <span class="text-nep-green text-base">{{ order.total_amount|floatformat:0 }}₫</span>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+    <a href="{% url 'orders:my_orders' %}" class="bg-nep-dark hover:bg-nep-darkSoft text-white px-6 py-3 rounded-full text-xs font-semibold shadow-xs transition">
+      Xem danh sách đơn hàng
+    </a>
+    <a href="{% url 'core:home' %}" class="bg-white border border-nep-grayLight hover:bg-nep-cream text-nep-dark px-6 py-3 rounded-full text-xs font-semibold transition">
+      Về trang chủ
+    </a>
+  </div>
+
+</div>
+{% endblock %}

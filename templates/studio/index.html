@@ -1,0 +1,1054 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nếp Studio — Tự thiết kế chiếc áo độc bản của bạn{% endblock %}
+
+{% block extra_head %}
+<!-- Fabric.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+<style>
+  /* Custom scrollbar for studio drawers */
+  .studio-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .studio-scroll::-webkit-scrollbar-thumb {
+    background: #E5E1D8;
+    border-radius: 4px;
+  }
+  .canvas-container {
+    margin: 0 auto;
+    position: relative;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="h-[calc(100vh-80px)] min-h-[750px] flex flex-col bg-nep-cream overflow-hidden"
+     x-data="studioApp()"
+     x-init="initStudio()">
+
+  <!-- 1. STUDIO TOP BAR (Image 1) -->
+  <header class="h-14 bg-white border-b border-nep-grayLight px-4 flex items-center justify-between shrink-0 z-30">
+    
+    <!-- Left: Back & Title -->
+    <div class="flex items-center gap-4">
+      <a href="{% url 'core:home' %}" class="p-1.5 hover:bg-nep-cream rounded-lg text-nep-dark transition" title="Quay lại trang chủ">
+        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+      </a>
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-serif font-bold text-nep-dark">nếp studio.</span>
+        <div class="h-4 w-px bg-nep-grayLight"></div>
+        <div class="flex flex-col">
+          <input type="text" x-model="designName" class="text-xs font-bold text-nep-dark bg-transparent border-none p-0 focus:outline-none focus:ring-0 hover:underline w-40 sm:w-60" placeholder="Chiếc áo của tôi">
+          <span class="text-[10px] text-nep-green font-medium flex items-center gap-1">
+            <i data-lucide="check" class="w-2.5 h-2.5"></i> <span x-text="saveStatus">Bản nháp trên máy</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Front / Back Side Switcher -->
+    <div class="flex items-center bg-nep-cream rounded-full p-1 border border-nep-grayLight shadow-xs text-xs font-semibold">
+      <button type="button" @click="switchSide('front')" :class="currentSide === 'front' ? 'bg-nep-dark text-white' : 'text-nep-gray hover:text-nep-dark'" class="px-4 py-1 rounded-full flex items-center gap-1.5 transition">
+        <span>Mặt trước</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-nep-gold"></span>
+      </button>
+      <button type="button" @click="switchSide('back')" :class="currentSide === 'back' ? 'bg-nep-dark text-white' : 'text-nep-gray hover:text-nep-dark'" class="px-4 py-1 rounded-full flex items-center gap-1.5 transition">
+        <span>Mặt sau</span>
+        <span class="w-1.5 h-1.5 rounded-full" :class="hasBackDesign ? 'bg-nep-gold' : 'bg-transparent'"></span>
+      </button>
+    </div>
+
+    <!-- Right: History & Actions -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <button type="button" @click="undo()" :disabled="!canUndo" class="p-2 hover:bg-nep-cream disabled:opacity-30 rounded-lg text-nep-dark transition" title="Hoàn tác (Undo)">
+        <i data-lucide="undo" class="w-4 h-4"></i>
+      </button>
+      <button type="button" @click="redo()" :disabled="!canRedo" class="p-2 hover:bg-nep-cream disabled:opacity-30 rounded-lg text-nep-dark transition" title="Làm lại (Redo)">
+        <i data-lucide="redo" class="w-4 h-4"></i>
+      </button>
+      
+      <button type="button" @click="saveDesign()" class="hidden sm:inline-flex items-center gap-1.5 bg-white border border-nep-grayLight hover:bg-nep-cream text-nep-dark px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+        <span>Lưu thiết kế</span>
+      </button>
+
+      <button type="button" @click="addToCart()" :disabled="addingToCart" class="inline-flex items-center gap-1.5 bg-nep-dark hover:bg-nep-darkSoft text-white px-4 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition">
+        <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+        <span x-text="addingToCart ? 'Đang thêm...' : 'Thêm vào giỏ'"></span>
+      </button>
+    </div>
+
+  </header>
+
+  <!-- 2. STUDIO WORKSPACE (3 Columns) -->
+  <div class="flex-grow flex overflow-hidden">
+    
+    <!-- ================= LEFT COLUMN: TOOLBAR & DRAWER ================= -->
+    <div class="flex shrink-0 z-20">
+      
+      <!-- Vertical Navigation Bar -->
+      <aside class="w-16 bg-white border-r border-nep-grayLight flex flex-col items-center py-4 space-y-6">
+        <button type="button" @click="activeTab = 'mau'" :class="activeTab === 'mau' ? 'text-nep-dark bg-nep-cream font-bold' : 'text-nep-gray hover:text-nep-dark'" class="w-12 h-12 rounded-xl flex flex-col items-center justify-center text-[10px] gap-1 transition">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i>
+          <span>Mẫu</span>
+        </button>
+
+        <button type="button" @click="activeTab = 'chu'" :class="activeTab === 'chu' ? 'text-nep-dark bg-nep-cream font-bold' : 'text-nep-gray hover:text-nep-dark'" class="w-12 h-12 rounded-xl flex flex-col items-center justify-center text-[10px] gap-1 transition">
+          <i data-lucide="type" class="w-4 h-4"></i>
+          <span>Chữ</span>
+        </button>
+
+        <button type="button" @click="activeTab = 'hinh'" :class="activeTab === 'hinh' ? 'text-nep-dark bg-nep-cream font-bold' : 'text-nep-gray hover:text-nep-dark'" class="w-12 h-12 rounded-xl flex flex-col items-center justify-center text-[10px] gap-1 transition">
+          <i data-lucide="shapes" class="w-4 h-4"></i>
+          <span>Hình</span>
+        </button>
+
+        <button type="button" @click="activeTab = 'tailen'" :class="activeTab === 'tailen' ? 'text-nep-dark bg-nep-cream font-bold' : 'text-nep-gray hover:text-nep-dark'" class="w-12 h-12 rounded-xl flex flex-col items-center justify-center text-[10px] gap-1 transition">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          <span>Tải lên</span>
+        </button>
+      </aside>
+
+      <!-- Expandable Drawer Content -->
+      <div class="w-72 sm:w-80 bg-white border-r border-nep-grayLight flex flex-col overflow-hidden shadow-xs">
+        
+        <!-- Tab 1: Mẫu (Templates Inspiration) -->
+        <div x-show="activeTab === 'mau'" class="flex-grow flex flex-col p-4 overflow-y-auto studio-scroll">
+          <h3 class="text-sm font-bold text-nep-dark mb-1">Một chút cảm hứng.</h3>
+          <p class="text-xs text-nep-gray mb-4">Chọn mẫu để thêm vào mặt đang thiết kế. Bạn có thể sửa mọi lớp.</p>
+
+          <div class="space-y-3">
+            <!-- Card 1 -->
+            <div @click="applyTemplate('la_minh')" class="p-4 rounded-xl border border-nep-grayLight hover:border-nep-dark cursor-pointer bg-nep-creamLight hover:bg-white transition group">
+              <div class="py-5 text-center">
+                <p class="text-xl font-serif font-bold text-nep-dark tracking-tight">LÀ MÌNH.</p>
+                <p class="text-[9px] font-bold text-nep-gray uppercase tracking-widest mt-0.5">MỘT BẢN DUY NHẤT</p>
+                <p class="text-[9px] font-bold text-nep-greenMuted tracking-wider mt-1">CÁCH CỦA BẠN</p>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-nep-grayLight/60 text-[10px] text-nep-gray">
+                <span>Tuyên ngôn riêng</span>
+                <i data-lucide="plus" class="w-3 h-3 group-hover:text-nep-dark"></i>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div @click="applyTemplate('no_theo_cach')" class="p-4 rounded-xl border border-nep-grayLight hover:border-nep-dark cursor-pointer bg-nep-creamLight hover:bg-white transition group">
+              <div class="py-4 text-center">
+                <div class="w-7 h-7 mx-auto mb-1 text-nep-greenMuted">
+                  <svg viewBox="0 0 100 100" fill="none" class="w-full h-full">
+                    <circle cx="50" cy="50" r="14" fill="#E5C158"/>
+                    <path d="M50 12C55 12 58 24 50 32C42 24 45 12 50 12Z" fill="#647746"/>
+                    <path d="M50 88C45 88 42 76 50 68C58 76 55 88 50 88Z" fill="#647746"/>
+                    <path d="M12 50C12 45 24 42 32 50C24 58 12 55 12 50Z" fill="#647746"/>
+                    <path d="M88 50C88 55 76 58 68 50C76 42 88 45 88 50Z" fill="#647746"/>
+                  </svg>
+                </div>
+                <p class="text-xs font-bold text-nep-dark uppercase tracking-wider">NỞ THEO CÁCH CỦA BẠN</p>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-nep-grayLight/60 text-[10px] text-nep-gray">
+                <span>Cứ nở thôi</span>
+                <i data-lucide="plus" class="w-3 h-3 group-hover:text-nep-dark"></i>
+              </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div @click="applyTemplate('nep_club')" class="p-4 rounded-xl border border-nep-grayLight hover:border-nep-dark cursor-pointer bg-[#D4E157]/20 hover:bg-[#D4E157]/30 transition group">
+              <div class="py-4 text-center">
+                <p class="text-lg font-bold text-nep-dark tracking-tight">NẾP CLUB</p>
+                <div class="w-5 h-5 mx-auto my-1 text-nep-dark">
+                  <svg viewBox="0 0 100 100" fill="none" class="w-full h-full">
+                    <circle cx="50" cy="50" r="44" stroke="#1A1A1A" stroke-width="8" fill="#D4E157"/>
+                    <circle cx="35" cy="40" r="6" fill="#1A1A1A"/>
+                    <circle cx="65" cy="40" r="6" fill="#1A1A1A"/>
+                    <path d="M32 62C40 74 60 74 68 62" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <p class="text-[9px] font-bold text-nep-dark/70 tracking-wider">HỘI MÌNH CÓ CHẤT</p>
+              </div>
+              <div class="flex items-center justify-between pt-2 border-t border-nep-dark/10 text-[10px] text-nep-dark/80">
+                <span>Hội mình có chất</span>
+                <i data-lucide="plus" class="w-3 h-3 group-hover:text-nep-dark"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Chữ (Typography) -->
+        <div x-show="activeTab === 'chu'" class="flex-grow flex flex-col p-4 overflow-y-auto studio-scroll">
+          <h3 class="text-sm font-bold text-nep-dark mb-1">Thêm văn bản.</h3>
+          <p class="text-xs text-nep-gray mb-4">Gõ câu chữ riêng của bạn, chọn font và căn chỉnh.</p>
+
+          <button type="button" @click="addText('DÒNG CHỮ CỦA BẠN')" class="w-full py-3 bg-nep-dark text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 mb-6 hover:bg-nep-darkSoft transition">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Thêm chữ lên áo</span>
+          </button>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Mẫu câu nhanh</label>
+              <div class="grid grid-cols-1 gap-2">
+                <button type="button" @click="addText('CHẬM MỘT NHỊP.')" class="text-left px-3 py-2 bg-nep-creamLight hover:bg-nep-grayLight/40 rounded-lg text-xs font-serif font-bold text-nep-dark transition">"CHẬM MỘT NHỊP."</button>
+                <button type="button" @click="addText('LÀ CHÍNH MÌNH')" class="text-left px-3 py-2 bg-nep-creamLight hover:bg-nep-grayLight/40 rounded-lg text-xs font-sans font-bold text-nep-dark transition">"LÀ CHÍNH MÌNH"</button>
+                <button type="button" @click="addText('CỨ NỞ THÔI')" class="text-left px-3 py-2 bg-nep-creamLight hover:bg-nep-grayLight/40 rounded-lg text-xs font-serif italic text-nep-dark transition">"Cứ nở thôi"</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Hình (Stickers & Icons) -->
+        <div x-show="activeTab === 'hinh'" class="flex-grow flex flex-col p-4 overflow-y-auto studio-scroll">
+          <h3 class="text-sm font-bold text-nep-dark mb-1">Kho hình & Sticker.</h3>
+          <p class="text-xs text-nep-gray mb-4">Chạm vào hình để đưa trực tiếp lên vùng in.</p>
+
+          <div class="grid grid-cols-2 gap-3">
+            <!-- Flower -->
+            <button type="button" @click="addSticker('flower')" class="aspect-square bg-nep-creamLight hover:bg-white rounded-xl border border-nep-grayLight p-4 flex flex-col items-center justify-center gap-2 group transition">
+              <div class="w-12 h-12 text-nep-greenMuted group-hover:scale-110 transition-transform">
+                <svg viewBox="0 0 100 100" fill="none" class="w-full h-full">
+                  <circle cx="50" cy="50" r="14" fill="#E5C158"/>
+                  <path d="M50 12C55 12 58 24 50 32C42 24 45 12 50 12Z" fill="#647746"/>
+                  <path d="M50 88C45 88 42 76 50 68C58 76 55 88 50 88Z" fill="#647746"/>
+                  <path d="M12 50C12 45 24 42 32 50C24 58 12 55 12 50Z" fill="#647746"/>
+                  <path d="M88 50C88 55 76 58 68 50C76 42 88 45 88 50Z" fill="#647746"/>
+                  <path d="M23 23C27 20 36 29 37 37C29 36 20 27 23 23Z" fill="#647746"/>
+                  <path d="M77 77C73 80 64 71 63 63C71 64 80 73 77 77Z" fill="#647746"/>
+                  <path d="M23 77C20 73 29 64 37 63C36 71 27 80 23 77Z" fill="#647746"/>
+                  <path d="M77 23C80 27 71 36 63 37C64 29 73 20 77 23Z" fill="#647746"/>
+                </svg>
+              </div>
+              <span class="text-[10px] font-semibold text-nep-dark">Hoa cúc Nếp</span>
+            </button>
+
+            <!-- Smiley -->
+            <button type="button" @click="addSticker('smiley')" class="aspect-square bg-nep-creamLight hover:bg-white rounded-xl border border-nep-grayLight p-4 flex flex-col items-center justify-center gap-2 group transition">
+              <div class="w-12 h-12 group-hover:scale-110 transition-transform">
+                <svg viewBox="0 0 100 100" fill="none" class="w-full h-full">
+                  <circle cx="50" cy="50" r="44" stroke="#1A1A1A" stroke-width="8" fill="#D4E157"/>
+                  <circle cx="35" cy="40" r="6" fill="#1A1A1A"/>
+                  <circle cx="65" cy="40" r="6" fill="#1A1A1A"/>
+                  <path d="M32 62C40 74 60 74 68 62" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="text-[10px] font-semibold text-nep-dark">Mặt cười</span>
+            </button>
+
+            <!-- Heart -->
+            <button type="button" @click="addSticker('heart')" class="aspect-square bg-nep-creamLight hover:bg-white rounded-xl border border-nep-grayLight p-4 flex flex-col items-center justify-center gap-2 group transition">
+              <i data-lucide="heart" class="w-10 h-10 text-rose-500 fill-rose-500 group-hover:scale-110 transition-transform"></i>
+              <span class="text-[10px] font-semibold text-nep-dark">Trái tim</span>
+            </button>
+
+            <!-- Star -->
+            <button type="button" @click="addSticker('star')" class="aspect-square bg-nep-creamLight hover:bg-white rounded-xl border border-nep-grayLight p-4 flex flex-col items-center justify-center gap-2 group transition">
+              <i data-lucide="sparkles" class="w-10 h-10 text-nep-gold fill-nep-gold group-hover:scale-110 transition-transform"></i>
+              <span class="text-[10px] font-semibold text-nep-dark">Lấp lánh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab 4: Tải lên (Upload image) -->
+        <div x-show="activeTab === 'tailen'" class="flex-grow flex flex-col p-4 overflow-y-auto studio-scroll">
+          <h3 class="text-sm font-bold text-nep-dark mb-1">Tải ảnh từ máy.</h3>
+          <p class="text-xs text-nep-gray mb-4">Hỗ trợ định dạng PNG, JPG, WebP tối đa 10MB.</p>
+
+          <label class="border-2 border-dashed border-nep-grayLight hover:border-nep-dark rounded-2xl p-6 text-center cursor-pointer bg-nep-creamLight hover:bg-white transition flex flex-col items-center justify-center gap-2">
+            <i data-lucide="image-up" class="w-8 h-8 text-nep-gray"></i>
+            <span class="text-xs font-bold text-nep-dark">Chọn ảnh từ thiết bị</span>
+            <span class="text-[10px] text-nep-gray">hoặc kéo thả ảnh vào đây</span>
+            <input type="file" @change="uploadImage($event)" accept="image/*" class="hidden">
+          </label>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= CENTER COLUMN: CANVAS WORKSPACE (Image 1) ================= -->
+    <div class="flex-grow relative flex flex-col items-center justify-center bg-[#EEEAE1] p-4 sm:p-6 overflow-hidden select-none">
+      
+      <!-- Realistic Photorealistic Shirt Mockup Background Container -->
+      <div class="relative w-full max-w-[480px] h-[580px] flex items-center justify-center transition-all duration-300"
+           :style="`transform: scale(${sizeScale});`">
+        
+        <!-- Live Form & Size Floating Pill -->
+        <div class="absolute top-3 right-3 z-30 bg-white/95 backdrop-blur-xs px-3 py-1 rounded-full border border-nep-grayLight shadow-xs text-[10px] font-bold text-nep-dark flex items-center gap-1.5 pointer-events-none select-none">
+          <span class="w-2 h-2 rounded-full bg-nep-green animate-pulse"></span>
+          <span x-text="`${currentForm ? currentForm.name : 'Áo'} · Size ${selectedSize}`"></span>
+        </div>
+
+        <!-- Shirt Silhouette Behind Canvas -->
+        <div x-show="currentSide === 'front'" class="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none select-none">
+          {% include 'components/mockup_front.html' %}
+        </div>
+        <div x-show="currentSide === 'back'" class="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none select-none">
+          {% include 'components/mockup_back.html' %}
+        </div>
+
+        <!-- Printable Area Dashed Border Guide matching Image 1 -->
+        <div class="absolute z-10 pointer-events-none border border-dashed border-nep-dark/40 transition-all duration-300"
+             :style="`width: ${currentZone.width}px; height: ${currentZone.height}px; top: ${getZoneTop()}px; left: calc(50% - ${currentZone.width / 2}px);`">
+        </div>
+
+        <!-- Fabric.js HTML5 Canvas Element -->
+        <div class="absolute z-20" :style="`top: ${getZoneTop()}px; left: calc(50% - ${currentZone.width / 2}px); width: ${currentZone.width}px; height: ${currentZone.height}px;`">
+          <canvas id="studio-canvas"></canvas>
+        </div>
+
+      </div>
+
+      <!-- Bottom Canvas Footer matching Image 1 -->
+      <div class="absolute bottom-4 inset-x-8 flex justify-between items-center text-[11px] text-nep-gray font-medium">
+        <div>
+          <span class="font-bold text-nep-dark" x-text="`Khổ in: ${currentZone.name} · ${currentZone.dimensions}`"></span>
+          <span class="ml-2 hidden sm:inline opacity-70">Vùng nét đứt là khổ in · kéo để di chuyển</span>
+        </div>
+        
+        <!-- Zoom Controls -->
+        <div class="flex items-center gap-2 bg-white/90 backdrop-blur-xs px-3 py-1.5 rounded-full border border-nep-grayLight shadow-xs">
+          <button type="button" @click="resetCanvasZoom()" class="hover:text-nep-dark"><i data-lucide="grid" class="w-3.5 h-3.5"></i></button>
+          <span class="text-xs font-bold text-nep-dark">100%</span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-4 text-[10px] text-nep-dark font-medium">
+          <span>01 — Bạn tạo ý tưởng.</span>
+          <span>02 — Nếp đưa lên áo.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= RIGHT COLUMN: PRODUCT CONFIG & LAYERS (Image 1) ================= -->
+    <aside class="w-80 bg-white border-l border-nep-grayLight flex flex-col overflow-y-auto studio-scroll shrink-0 p-5 space-y-6 z-20">
+      
+      <!-- Section 1: Áo của bạn -->
+      <div class="border-b border-nep-grayLight/80 pb-5">
+        <div class="flex justify-between items-baseline mb-2">
+          <h3 class="text-base font-serif font-bold text-nep-dark">Áo của bạn.</h3>
+          <span class="text-[10px] font-semibold text-nep-green uppercase tracking-wider" x-text="currentForm ? currentForm.fit : 'Phối unisex'">Phối unisex</span>
+        </div>
+
+        <!-- Phom áo Dropdown -->
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-[11px] font-semibold text-nep-gray uppercase tracking-wider">Phom áo</label>
+            <span class="text-xs font-bold text-nep-green" x-text="`${basePrice.toLocaleString()}₫`">280.000₫</span>
+          </div>
+          <select x-model="selectedProductType" @change="onProductTypeChange()" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-lg px-3 py-2 text-xs font-bold text-nep-dark focus:outline-none focus:border-nep-green shadow-xs transition">
+            <template x-for="f in forms" :key="f.id">
+              <option :value="f.id" :selected="f.id == selectedProductType" x-text="`${f.name} · ${f.basePrice.toLocaleString()}₫`"></option>
+            </template>
+          </select>
+          <div class="mt-1.5 flex items-center justify-between text-[10px] text-nep-gray">
+            <span class="font-medium text-nep-dark/80" x-text="currentForm ? currentForm.fit : 'Phối unisex'"></span>
+            <span class="opacity-70 truncate max-w-[140px]" x-text="currentForm ? currentForm.fabric : ''"></span>
+          </div>
+        </div>
+
+        <!-- Màu áo Circles (Image 1) -->
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-[11px] font-semibold text-nep-gray uppercase tracking-wider">Màu áo</label>
+            <span class="text-xs font-bold text-nep-dark" x-text="selectedColor.name">Kem</span>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <template x-for="c in colors" :key="c.id">
+              <button type="button" @click="selectColor(c)" class="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center transition shadow-xs" :style="`background-color: ${c.hex}`" :title="c.name">
+                <svg x-show="selectedColor.id === c.id" class="w-4 h-4" :class="c.isDark ? 'text-white' : 'text-nep-dark'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Size Selection (5 sizes: S, M, L, XL, 2XL) -->
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-1.5">
+              <label class="text-[11px] font-semibold text-nep-gray uppercase tracking-wider">Size</label>
+              <span class="text-xs font-bold text-nep-dark" x-text="`(${selectedSize})`"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-nep-green font-medium" x-text="stockText">Còn 25 áo</span>
+              <button type="button" @click="$dispatch('open-size-modal')" class="text-[10px] font-semibold text-nep-dark underline hover:opacity-80">Tìm size</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-5 gap-1.5">
+            <template x-for="s in sizes" :key="s.id">
+              <button type="button" @click="selectSize(s)"
+                      :class="selectedSizeId === s.id ? 'bg-nep-dark text-white font-bold ring-2 ring-nep-dark/20 shadow-xs' : 'bg-nep-creamLight hover:bg-nep-grayLight/50 text-nep-dark font-medium border border-nep-grayLight'"
+                      class="py-2 rounded-lg text-xs transition flex flex-col items-center justify-center">
+                <span x-text="s.name"></span>
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Khổ in Dropdown -->
+        <div>
+          <label class="block text-[11px] font-semibold text-nep-gray uppercase tracking-wider mb-1.5" x-text="`Khổ in · mặt ${currentSide === 'front' ? 'trước' : 'sau'}`"></label>
+          <select x-model="selectedZoneId" @change="onZoneChange()" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-lg px-3 py-2 text-xs font-bold text-nep-dark focus:outline-none focus:border-nep-green">
+            <template x-for="z in printZones" :key="z.id">
+              <option :value="z.id" x-text="`${z.name} · ${z.dimensions}`"></option>
+            </template>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Section 2: Chỉnh lớp (Active Object Properties matching Image 1) -->
+      <div class="border-b border-nep-grayLight/80 pb-5">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="text-xs font-bold text-nep-dark uppercase tracking-wider">Chỉnh lớp</h4>
+          <span class="text-[10px] bg-nep-grayLight/60 font-semibold text-nep-dark px-2 py-0.5 rounded" x-text="selectedLayer ? selectedLayer.type : 'Chưa chọn'"></span>
+        </div>
+
+        <template x-if="selectedLayer">
+          <div class="space-y-4">
+            
+            <!-- Màu in -->
+            <div x-show="selectedLayer.type === 'text' || selectedLayer.type === 'shape'">
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="text-[11px] font-semibold text-nep-gray">Màu in</label>
+                <span class="text-xs font-mono text-nep-dark" x-text="selectedLayer.color">#647746</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="color" x-model="selectedLayer.color" @input="updateLayerProperty('color', selectedLayer.color)" class="w-8 h-8 rounded border border-gray-300 cursor-pointer p-0">
+                <input type="text" x-model="selectedLayer.color" @input="updateLayerProperty('color', selectedLayer.color)" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-lg px-2.5 py-1 text-xs font-mono">
+              </div>
+            </div>
+
+            <!-- Kích thước & Góc xoay -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-nep-gray mb-1">Rộng (px)</label>
+                <input type="number" x-model="selectedLayer.width" @input="updateLayerProperty('scale', selectedLayer.width)" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-lg px-2.5 py-1.5 text-xs font-bold">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-nep-gray mb-1">Xoay · độ</label>
+                <input type="number" x-model="selectedLayer.angle" @input="updateLayerProperty('angle', selectedLayer.angle)" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-lg px-2.5 py-1.5 text-xs font-bold">
+              </div>
+            </div>
+
+            <!-- Độ trong suốt -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="text-[11px] font-semibold text-nep-gray">Độ trong suốt</label>
+                <span class="text-xs font-bold text-nep-dark" x-text="`${Math.round(selectedLayer.opacity * 100)}%`">100%</span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" x-model="selectedLayer.opacity" @input="updateLayerProperty('opacity', selectedLayer.opacity)" class="w-full accent-nep-dark h-1.5 bg-nep-grayLight rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Layer Actions -->
+            <div class="flex items-center gap-2 pt-2">
+              <button type="button" @click="bringForward()" class="flex-1 py-1.5 bg-nep-creamLight hover:bg-nep-grayLight/40 rounded text-[11px] font-medium text-nep-dark transition">Lên trên</button>
+              <button type="button" @click="sendBackward()" class="flex-1 py-1.5 bg-nep-creamLight hover:bg-nep-grayLight/40 rounded text-[11px] font-medium text-nep-dark transition">Xuống dưới</button>
+              <button type="button" @click="deleteSelected()" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded text-xs transition" title="Xóa lớp"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+
+          </div>
+        </template>
+
+        <template x-if="!selectedLayer">
+          <p class="text-xs text-nep-gray italic">Chạm vào chữ hoặc hình trên áo để tùy chỉnh màu sắc, góc xoay và độ lớn.</p>
+        </template>
+      </div>
+
+      <!-- Section 3: Bảng tính giá chi tiết -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs text-nep-gray">
+          <span>Phôi áo:</span>
+          <span class="font-semibold text-nep-dark" x-text="`${basePrice.toLocaleString()}₫`">280.000₫</span>
+        </div>
+        <div class="flex justify-between text-xs text-nep-gray">
+          <span>Phí in mặt trước (<span x-text="currentZone.name"></span>):</span>
+          <span class="font-semibold text-nep-dark" x-text="`+${currentZone.fee.toLocaleString()}₫`">+25.000₫</span>
+        </div>
+        <div class="flex justify-between text-xs text-nep-gray" x-show="hasBackDesign">
+          <span>Phí in mặt sau:</span>
+          <span class="font-semibold text-nep-dark">+25.000₫</span>
+        </div>
+        <div class="flex justify-between text-sm font-bold text-nep-dark pt-2 border-t border-nep-grayLight">
+          <span>Tổng dự tính:</span>
+          <span class="text-base text-nep-green" x-text="`${calculateTotal().toLocaleString()}₫`">305.000₫</span>
+        </div>
+      </div>
+
+      <!-- Main Action Button -->
+      <button type="button" @click="addToCart()" :disabled="addingToCart" class="w-full py-3.5 bg-nep-dark hover:bg-nep-darkSoft text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition">
+        <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+        <span x-text="addingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng ↗'"></span>
+      </button>
+
+    </aside>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function studioApp() {
+  return {
+    activeTab: 'mau',
+    designName: 'Chiếc áo của tôi',
+    saveStatus: 'Bản nháp trên máy',
+    currentSide: 'front',
+    hasBackDesign: false,
+    
+    // Canvas instance
+    canvas: null,
+    frontData: null,
+    backData: null,
+    
+    // History
+    history: [],
+    historyIndex: -1,
+    canUndo: false,
+    canRedo: false,
+
+    // Product Forms & Specs
+    forms: {{ forms_json|safe }},
+    currentForm: null,
+    currentFormSlug: 'ao-custom-classic',
+    selectedProductType: '{{ default_product.product_type.id|default:1 }}',
+    basePrice: {{ default_product.base_price|default:280000|floatformat:0 }},
+    
+    // Colors with natural streetwear tones
+    colors: [
+      { 
+        id: 1, 
+        name: 'Kem', 
+        hex: '#F5F0E8', 
+        collar: '#E9E3D6', 
+        inner: '#D8D1C2', 
+        stroke: '#E2DBD0', 
+        stitch: '#D4CDBD', 
+        textColor: '#2D3A2E', 
+        isDark: false 
+      },
+      { 
+        id: 2, 
+        name: 'Trắng', 
+        hex: '#FFFFFF', 
+        collar: '#F2F2F2', 
+        inner: '#E5E5E5', 
+        stroke: '#EAEAEA', 
+        stitch: '#E0E0E0', 
+        textColor: '#1A1A1A', 
+        isDark: false 
+      },
+      { 
+        id: 3, 
+        name: 'Đen', 
+        hex: '#1C1C1C', 
+        collar: '#282828', 
+        inner: '#121212', 
+        stroke: '#2D2D2D', 
+        stitch: '#383838', 
+        textColor: '#FAF7F2', 
+        isDark: true 
+      },
+      { 
+        id: 4, 
+        name: 'Xanh rêu', 
+        hex: '#5E6E49', 
+        collar: '#505E3E', 
+        inner: '#3C472E', 
+        stroke: '#475437', 
+        stitch: '#435034', 
+        textColor: '#FAF7F2', 
+        isDark: true 
+      },
+      { 
+        id: 5, 
+        name: 'Xám tiêu', 
+        hex: '#9D9D9D', 
+        collar: '#8D8D8D', 
+        inner: '#777777', 
+        stroke: '#858585', 
+        stitch: '#808080', 
+        textColor: '#1A1A1A', 
+        isDark: false 
+      },
+    ],
+    selectedColor: { 
+      id: 1, 
+      name: 'Kem', 
+      hex: '#F5F0E8', 
+      collar: '#E9E3D6', 
+      inner: '#D8D1C2', 
+      stroke: '#E2DBD0', 
+      stitch: '#D4CDBD', 
+      textColor: '#2D3A2E', 
+      isDark: false 
+    },
+    
+    // Sizes (S, M, L, XL, 2XL)
+    sizes: {{ sizes_json|safe }},
+    selectedSize: 'M',
+    selectedSizeId: 2,
+    sizeScale: 1.0,
+    stockText: 'Còn 25 áo',
+
+    // Print Zones
+    printZones: [
+      { id: 1, name: 'Nhỏ', dimensions: '15 × 18 cm', width: 170, height: 210, fee: 0 },
+      { id: 2, name: 'Vừa', dimensions: '22 × 26 cm', width: 220, height: 260, fee: 25000 },
+      { id: 3, name: 'Lớn', dimensions: '30 × 35 cm', width: 260, height: 320, fee: 45000 }
+    ],
+    selectedZoneId: 2,
+    currentZone: { id: 2, name: 'Vừa', dimensions: '22 × 26 cm', width: 220, height: 260, fee: 25000 },
+
+    // Selected object on canvas
+    selectedLayer: null,
+    addingToCart: false,
+
+    initStudio() {
+      const self = this;
+
+      // Tìm và kích hoạt form áo ban đầu
+      if (this.forms && this.forms.length > 0) {
+        const initialForm = this.forms.find(f => f.id == self.selectedProductType) || this.forms[0];
+        if (initialForm) {
+          this.currentForm = initialForm;
+          this.currentFormSlug = initialForm.slug;
+          this.basePrice = initialForm.basePrice;
+          if (initialForm.printZones && initialForm.printZones.length > 0) {
+            this.printZones = initialForm.printZones;
+            this.currentZone = this.printZones.find(z => z.id == self.selectedZoneId) || this.printZones[1] || this.printZones[0];
+            this.selectedZoneId = this.currentZone.id;
+          }
+        }
+      }
+
+      // Kích hoạt size mặc định ban đầu
+      if (this.sizes && this.sizes.length > 0) {
+        const initialSize = this.sizes.find(s => s.id == self.selectedSizeId) || this.sizes[1] || this.sizes[0];
+        if (initialSize) {
+          this.selectedSize = initialSize.name;
+          this.selectedSizeId = initialSize.id;
+          this.stockText = `Còn ${initialSize.stock || 25} áo`;
+        }
+      }
+
+      this.preloadMockups();
+      
+      // Khởi tạo Fabric.js Canvas
+      this.canvas = new fabric.Canvas('studio-canvas', {
+        width: this.currentZone.width,
+        height: this.currentZone.height,
+        backgroundColor: 'transparent',
+        selection: true,
+      });
+
+      // Lắng nghe sự kiện chọn object
+      this.canvas.on('selection:created', (e) => self.handleObjectSelection(e));
+      this.canvas.on('selection:updated', (e) => self.handleObjectSelection(e));
+      this.canvas.on('selection:cleared', () => { self.selectedLayer = null; });
+      this.canvas.on('object:modified', () => { self.saveState(); });
+      this.canvas.on('object:added', () => { self.saveState(); });
+
+      // Nạp mẫu mặc định ban đầu: "LÀ MÌNH. MỘT BẢN DUY NHẤT"
+      setTimeout(() => {
+        self.applyTemplate('la_minh');
+      }, 200);
+
+      // Cho phép modal gợi ý size gọi lại
+      window.selectSizeFromModal = (sizeName) => {
+        const found = self.sizes.find(s => s.name === sizeName);
+        if (found) {
+          self.selectSize(found);
+        } else {
+          self.selectedSize = sizeName;
+        }
+      };
+    },
+
+    handleObjectSelection(e) {
+      const obj = e.selected ? e.selected[0] : null;
+      if (!obj) {
+        this.selectedLayer = null;
+        return;
+      }
+
+      this.selectedLayer = {
+        type: obj.type === 'i-text' || obj.type === 'text' ? 'text' : (obj.type === 'image' ? 'image' : 'shape'),
+        color: obj.fill || '#647746',
+        width: Math.round(obj.getScaledWidth()),
+        angle: Math.round(obj.angle || 0),
+        opacity: obj.opacity !== undefined ? obj.opacity : 1,
+        rawObj: obj
+      };
+    },
+
+    updateLayerProperty(prop, value) {
+      if (!this.selectedLayer || !this.selectedLayer.rawObj) return;
+      const obj = this.selectedLayer.rawObj;
+
+      if (prop === 'color') {
+        obj.set('fill', value);
+      } else if (prop === 'angle') {
+        obj.set('angle', parseFloat(value) || 0);
+      } else if (prop === 'opacity') {
+        obj.set('opacity', parseFloat(value));
+      } else if (prop === 'scale') {
+        const targetWidth = parseFloat(value) || 50;
+        obj.scaleToWidth(targetWidth);
+      }
+      this.canvas.renderAll();
+    },
+
+    deleteSelected() {
+      const activeObj = this.canvas.getActiveObject();
+      if (activeObj) {
+        this.canvas.remove(activeObj);
+        this.selectedLayer = null;
+        this.canvas.renderAll();
+      }
+    },
+
+    bringForward() {
+      const activeObj = this.canvas.getActiveObject();
+      if (activeObj) {
+        activeObj.bringForward();
+        this.canvas.renderAll();
+      }
+    },
+
+    sendBackward() {
+      const activeObj = this.canvas.getActiveObject();
+      if (activeObj) {
+        activeObj.sendBackwards();
+        this.canvas.renderAll();
+      }
+    },
+
+    selectColor(c) {
+      const prevDark = this.selectedColor.isDark;
+      this.selectedColor = c;
+
+      // Smart Text Contrast: If switching between dark & light shirts, auto-contrast text objects
+      if (this.canvas) {
+        let changed = false;
+        this.canvas.getObjects().forEach(obj => {
+          if (obj.type === 'i-text' || obj.type === 'text') {
+            const fill = (obj.fill || '').toLowerCase();
+            const isDarkText = fill === '#2d3a2e' || fill === '#1a1a1a' || fill === '#1c1c1c' || fill === '#000000' || fill === 'rgb(0,0,0)' || fill === 'rgb(45,58,46)' || fill === 'black';
+            const isLightText = fill === '#faf7f2' || fill === '#f5f0e8' || fill === '#ffffff' || fill === 'rgb(255,255,255)' || fill === 'white';
+
+            if (c.isDark && isDarkText) {
+              obj.set('fill', c.textColor || '#FAF7F2');
+              changed = true;
+            } else if (!c.isDark && isLightText) {
+              obj.set('fill', c.textColor || '#2D3A2E');
+            }
+          }
+        });
+        if (changed) {
+          this.canvas.renderAll();
+          if (this.selectedLayer && this.selectedLayer.rawObj) {
+            this.selectedLayer.color = this.selectedLayer.rawObj.fill;
+          }
+          this.saveState();
+        }
+      }
+    },
+
+    onZoneChange() {
+      const z = this.printZones.find(item => item.id == this.selectedZoneId);
+      if (z) {
+        this.currentZone = z;
+        this.canvas.setWidth(z.width);
+        this.canvas.setHeight(z.height);
+        this.canvas.renderAll();
+      }
+    },
+
+    onProductTypeChange() {
+      const form = this.forms.find(f => f.id == this.selectedProductType);
+      if (form) {
+        this.currentForm = form;
+        this.currentFormSlug = form.slug;
+        this.basePrice = form.basePrice;
+        if (form.printZones && form.printZones.length > 0) {
+          this.printZones = form.printZones;
+          const sameZone = this.printZones.find(z => z.name === this.currentZone.name);
+          const targetZone = sameZone || this.printZones[1] || this.printZones[0];
+          this.selectedZoneId = targetZone.id;
+          this.currentZone = targetZone;
+          if (this.canvas) {
+            this.canvas.setWidth(targetZone.width);
+            this.canvas.setHeight(targetZone.height);
+            this.canvas.renderAll();
+          }
+        }
+      }
+    },
+
+    selectSize(s) {
+      this.selectedSize = s.name;
+      this.selectedSizeId = s.id;
+      this.stockText = `Còn ${s.stock || 25} áo`;
+      const scaleMap = { 'S': 0.94, 'M': 1.0, 'L': 1.04, 'XL': 1.08, '2XL': 1.12 };
+      this.sizeScale = scaleMap[s.name] || 1.0;
+    },
+
+    getMockupImage(side) {
+      const formSlug = this.currentFormSlug || 'ao-thun-oversize';
+      const colorMap = {
+        1: 'kem',
+        2: 'trang',
+        3: 'den',
+        4: 'xanh_reu',
+        5: 'xam_tieu'
+      };
+      const colorSlug = colorMap[this.selectedColor ? this.selectedColor.id : 1] || 'kem';
+      return `/static/images/mockups/${formSlug}/${side}_${colorSlug}.png`;
+    },
+
+    getZoneTop() {
+      if (this.currentSide === 'back') {
+        if (this.currentFormSlug === 'ao-hoodie-nep') return 175;
+        return 145;
+      }
+      if (this.currentFormSlug === 'ao-hoodie-nep') return 155;
+      if (this.currentFormSlug === 'ao-polo-pique') return 165;
+      return 145;
+    },
+
+    preloadMockups() {
+      const forms = ['ao-thun-oversize', 'ao-custom-classic', 'ao-polo-pique', 'ao-hoodie-nep', 'ao-dai-tay-nep'];
+      const colors = ['kem', 'trang', 'den', 'xanh_reu', 'xam_tieu'];
+      const sides = ['front', 'back'];
+      forms.forEach(f => {
+        colors.forEach(c => {
+          sides.forEach(s => {
+            const img = new Image();
+            img.src = `/static/images/mockups/${f}/${s}_${c}.png`;
+          });
+        });
+      });
+    },
+
+    switchSide(side) {
+      if (this.currentSide === side) return;
+
+      // Lưu trạng thái mặt hiện tại
+      if (this.currentSide === 'front') {
+        this.frontData = this.canvas.toJSON();
+      } else {
+        this.backData = this.canvas.toJSON();
+      }
+
+      this.currentSide = side;
+
+      // Nạp dữ liệu mặt mới
+      const targetData = side === 'front' ? this.frontData : this.backData;
+      this.canvas.clear();
+      if (targetData && targetData.objects && targetData.objects.length > 0) {
+        this.canvas.loadFromJSON(targetData, () => {
+          this.canvas.renderAll();
+        });
+      }
+    },
+
+    addText(textContent) {
+      const text = new fabric.IText(textContent || 'VĂN BẢN MỚI', {
+        left: 20,
+        top: 40,
+        fontFamily: 'Playfair Display',
+        fontSize: 22,
+        fontWeight: 'bold',
+        fill: this.selectedColor.textColor || (this.selectedColor.isDark ? '#FAF7F2' : '#2D3A2E'),
+      });
+      this.canvas.add(text);
+      this.canvas.setActiveObject(text);
+      this.canvas.renderAll();
+    },
+
+    addSticker(type) {
+      const self = this;
+      let svgCode = '';
+
+      if (type === 'flower') {
+        svgCode = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="14" fill="#E5C158"/><path d="M50 12C55 12 58 24 50 32C42 24 45 12 50 12Z" fill="#647746"/><path d="M50 88C45 88 42 76 50 68C58 76 55 88 50 88Z" fill="#647746"/><path d="M12 50C12 45 24 42 32 50C24 58 12 55 12 50Z" fill="#647746"/><path d="M88 50C88 55 76 58 68 50C76 42 88 45 88 50Z" fill="#647746"/><path d="M23 23C27 20 36 29 37 37C29 36 20 27 23 23Z" fill="#647746"/><path d="M77 77C73 80 64 71 63 63C71 64 80 73 77 77Z" fill="#647746"/><path d="M23 77C20 73 29 64 37 63C36 71 27 80 23 77Z" fill="#647746"/><path d="M77 23C80 27 71 36 63 37C64 29 73 20 77 23Z" fill="#647746"/></svg>`;
+      } else if (type === 'smiley') {
+        svgCode = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="44" stroke="#1A1A1A" stroke-width="8" fill="#D4E157"/><circle cx="35" cy="40" r="6" fill="#1A1A1A"/><circle cx="65" cy="40" r="6" fill="#1A1A1A"/><path d="M32 62C40 74 60 74 68 62" stroke="#1A1A1A" stroke-width="8" stroke-linecap="round"/></svg>`;
+      } else if (type === 'heart') {
+        svgCode = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 85 C20 60 5 40 5 25 A 20 20 0 0 1 45 15 L 50 20 L 55 15 A 20 20 0 0 1 95 25 C 95 40 80 60 50 85 Z" fill="#E11D48"/></svg>`;
+      } else {
+        svgCode = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="#C4A35A"/></svg>`;
+      }
+
+      fabric.loadSVGFromString(svgCode, function(objects, options) {
+        const obj = fabric.util.groupSVGElements(objects, options);
+        obj.scaleToWidth(70);
+        obj.set({ left: 75, top: 80 });
+        self.canvas.add(obj);
+        self.canvas.setActiveObject(obj);
+        self.canvas.renderAll();
+      });
+    },
+
+    uploadImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      const self = this;
+      reader.onload = function(f) {
+        fabric.Image.fromURL(f.target.result, function(img) {
+          img.scaleToWidth(120);
+          img.set({ left: 50, top: 50 });
+          self.canvas.add(img);
+          self.canvas.setActiveObject(img);
+          self.canvas.renderAll();
+        });
+      };
+      reader.readAsDataURL(file);
+    },
+
+    applyTemplate(templateKey) {
+      this.canvas.clear();
+      const textColor = this.selectedColor.textColor || (this.selectedColor.isDark ? '#FAF7F2' : '#2D3A2E');
+
+      if (templateKey === 'la_minh') {
+        const t1 = new fabric.IText('LÀ MÌNH.', {
+          left: 30,
+          top: 40,
+          fontFamily: 'Playfair Display',
+          fontSize: 32,
+          fontWeight: 'bold',
+          fill: textColor,
+        });
+
+        const t2 = new fabric.IText('MỘT BẢN DUY NHẤT', {
+          left: 32,
+          top: 85,
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 10,
+          fontWeight: 'bold',
+          letterSpacing: 2,
+          fill: '#7A7A7A',
+        });
+
+        const t3 = new fabric.IText('CÁCH CỦA BẠN', {
+          left: 45,
+          top: 135,
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 11,
+          fontWeight: 'bold',
+          fill: textColor,
+        });
+
+        this.canvas.add(t1, t2, t3);
+        this.addSticker('flower');
+      } else if (templateKey === 'no_theo_cach') {
+        const t1 = new fabric.IText('NỞ THEO CÁCH CỦA BẠN', {
+          left: 20,
+          top: 100,
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 13,
+          fontWeight: 'bold',
+          fill: textColor,
+        });
+        this.canvas.add(t1);
+        this.addSticker('flower');
+      } else if (templateKey === 'nep_club') {
+        const t1 = new fabric.IText('NẾP CLUB', {
+          left: 40,
+          top: 40,
+          fontFamily: 'Plus Jakarta Sans',
+          fontSize: 26,
+          fontWeight: 'bold',
+          fill: textColor,
+        });
+        this.canvas.add(t1);
+        this.addSticker('smiley');
+      }
+      this.canvas.renderAll();
+    },
+
+    saveState() {
+      this.saveStatus = 'Đã lưu thay đổi';
+    },
+
+    calculateTotal() {
+      let total = this.basePrice + this.currentZone.fee;
+      if (this.hasBackDesign) total += 25000;
+      return total;
+    },
+
+    saveDesign() {
+      const self = this;
+      this.saveStatus = 'Đang lưu...';
+
+      const payload = {
+        name: this.designName,
+        product_id: this.currentForm ? this.currentForm.productId : this.selectedProductType,
+        color_id: this.selectedColor.id,
+        print_zone_front_id: this.currentZone.id,
+        canvas_json_front: this.currentSide === 'front' ? this.canvas.toJSON() : this.frontData,
+        canvas_json_back: this.currentSide === 'back' ? this.canvas.toJSON() : this.backData,
+        preview_front: this.canvas.toDataURL({ format: 'png', quality: 0.8 }),
+      };
+
+      fetch('{% url "studio:api_save_design" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        self.saveStatus = 'Đã lưu lên máy chủ';
+        alert('Đã lưu mẫu áo vào bộ sưu tập của bạn thành công!');
+      })
+      .catch(() => {
+        self.saveStatus = 'Lỗi lưu';
+      });
+    },
+
+    addToCart() {
+      const self = this;
+      this.addingToCart = true;
+
+      const payload = {
+        product_id: this.currentForm ? this.currentForm.productId : this.selectedProductType,
+        color_id: this.selectedColor.id,
+        size_id: this.selectedSizeId,
+        quantity: 1,
+        print_zone_front_id: this.currentZone.id,
+      };
+
+      fetch('{% url "cart:api_add" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        self.addingToCart = false;
+        if (data.status === 'success') {
+          if (confirm('Đã thêm áo vào giỏ hàng thành công! Bạn có muốn đến giỏ hàng thanh toán ngay không?')) {
+            window.location.href = '{% url "cart:detail" %}';
+          }
+        }
+      })
+      .catch(() => {
+        self.addingToCart = false;
+        alert('Có lỗi khi thêm vào giỏ hàng. Vui lòng thử lại!');
+      });
+    }
+  };
+}
+</script>
+{% endblock %}

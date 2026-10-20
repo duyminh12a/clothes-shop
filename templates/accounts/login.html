@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Đăng nhập — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-16">
+  
+  <div class="bg-white rounded-3xl p-8 border border-nep-grayLight shadow-xs">
+    
+    <div class="text-center mb-8">
+      <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// TÀI KHOẢN NẾP</span>
+      <h1 class="text-2xl font-serif font-bold text-nep-dark mt-1">Chào mừng trở lại</h1>
+      <p class="text-xs text-nep-gray mt-1">Đăng nhập để xem các thiết kế và đơn hàng của bạn.</p>
+    </div>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Tên đăng nhập hoặc Email</label>
+        <input type="text" name="identifier" required placeholder="name@example.com hoặc username" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1.5">
+          <label class="text-[11px] font-semibold text-nep-dark uppercase tracking-wider">Mật khẩu</label>
+          <a href="#" class="text-[11px] text-nep-gray hover:underline">Quên mật khẩu?</a>
+        </div>
+        <input type="password" name="password" required placeholder="••••••••" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
+      </div>
+
+      <button type="submit" class="w-full py-3.5 bg-nep-dark hover:bg-nep-darkSoft text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-sm">
+        Đăng nhập
+      </button>
+    </form>
+
+    <div class="mt-8 pt-6 border-t border-gray-100 text-center text-xs text-nep-gray">
+      <span>Chưa có tài khoản Nếp?</span>
+      <a href="{% url 'accounts:register' %}" class="font-bold text-nep-dark hover:underline ml-1">Đăng ký ngay</a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

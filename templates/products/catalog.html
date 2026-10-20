@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mẫu có sẵn & Kho cảm hứng — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  
+  <!-- Header -->
+  <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <span class="text-xs font-bold tracking-wider text-nep-greenMuted uppercase">/// KHO Ý TƯỞNG NẾP STUDIO</span>
+      <h1 class="text-4xl font-serif font-bold text-nep-dark mt-1 tracking-tight">Mẫu thiết kế có sẵn</h1>
+      <p class="text-xs text-nep-gray mt-2">Chọn mẫu bạn ưng ý nhất để tự tay tùy biến tên, chữ hoặc chi tiết trong Studio.</p>
+    </div>
+
+    <!-- Quick CTA -->
+    <a href="{% url 'studio:index' %}" class="inline-flex items-center gap-2 bg-nep-dark hover:bg-nep-darkSoft text-white px-5 py-2.5 rounded-full text-xs font-semibold shadow-xs transition">
+      <span>Tự vẽ từ áo trơn</span>
+      <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-2 mb-8 border-b border-nep-grayLight pb-4">
+    <a href="{% url 'products:catalog' %}" class="px-4 py-1.5 rounded-full text-xs font-semibold transition {% if not current_category %}bg-nep-dark text-white{% else %}bg-nep-creamLight hover:bg-nep-grayLight/50 text-nep-dark{% endif %}">
+      Tất cả
+    </a>
+    {% for cat in categories %}
+      <a href="{% url 'products:catalog' %}?category={{ cat.slug }}" class="px-4 py-1.5 rounded-full text-xs font-semibold transition {% if current_category == cat.slug %}bg-nep-dark text-white{% else %}bg-nep-creamLight hover:bg-nep-grayLight/50 text-nep-dark{% endif %}">
+        {{ cat.name }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Templates Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    {% for t in templates %}
+      <div class="bg-white rounded-3xl p-6 border border-nep-grayLight shadow-xs hover:shadow-md transition group flex flex-col justify-between">
+        <div>
+          <!-- Visual Mockup Card -->
+          <div class="aspect-4/3 rounded-2xl bg-nep-cream flex items-center justify-center p-6 mb-5 relative overflow-hidden group-hover:scale-[1.02] transition-transform">
+            <span class="text-[10px] font-bold tracking-wider text-nep-gray uppercase absolute top-4 left-4 bg-white/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-nep-grayLight/60">
+              {{ t.category.name }}
+            </span>
+            <div class="text-center">
+              <p class="text-2xl font-serif font-bold text-nep-dark tracking-tight">{{ t.name }}</p>
+              {% if t.slogan %}
+                <p class="text-[10px] text-nep-greenMuted font-bold mt-1 uppercase tracking-widest">{{ t.slogan }}</p>
+              {% endif %}
+            </div>
+          </div>
+          
+          <h3 class="font-bold text-nep-dark text-base">{{ t.name }}</h3>
+          <p class="text-xs text-nep-gray mt-1">Gợi ý phong cách: {{ t.tags|default:"Tối giản, cá tính" }}</p>
+        </div>
+
+        <div class="pt-6 mt-6 border-t border-gray-100 flex items-center justify-between">
+          <span class="text-xs font-semibold text-nep-dark">Phôi áo Classic 100% Cotton</span>
+          <a href="{% url 'studio:index' %}?template_id={{ t.id }}" class="inline-flex items-center gap-1.5 bg-nep-cream hover:bg-nep-dark hover:text-white text-nep-dark px-4 py-2 rounded-full text-xs font-semibold transition">
+            <span>Tùy biến trong Studio</span>
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-span-full py-16 text-center text-nep-gray">
+        <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+        <p class="text-sm">Chưa có mẫu nào trong danh mục này.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
