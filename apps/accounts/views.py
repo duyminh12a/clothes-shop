@@ -7,29 +7,39 @@ from studio.models import Design
 
 def login_view(request):
     """Trang đăng nhập"""
+    next_url = request.POST.get('next') or request.GET.get('next')
+
+    # Nếu người dùng đã đăng nhập sẵn
     if request.user.is_authenticated:
+        if next_url and next_url.startswith('/'):
+            return redirect(next_url)
+        if request.user.is_staff:
+            return redirect('admin_panel:products')
         return redirect('accounts:my_designs')
 
     if request.method == 'POST':
-        identifier = request.POST.get('identifier') # username hoặc email
-        password = request.POST.get('password')
+        identifier = request.POST.get('identifier', '').strip()
+        password = request.POST.get('password', '')
         
         user = authenticate(request, username=identifier, password=password)
         if not user:
             # Thử tìm theo email
-            user_obj = User.objects.filter(email=identifier).first()
+            user_obj = User.objects.filter(email__iexact=identifier).first()
             if user_obj:
                 user = authenticate(request, username=user_obj.username, password=password)
 
         if user:
             login(request, user)
             messages.success(request, f"Chào mừng bạn trở lại, {user.get_full_name() or user.username}!")
-            next_url = request.GET.get('next', 'accounts:my_designs')
-            return redirect(next_url)
+            if next_url and next_url.startswith('/'):
+                return redirect(next_url)
+            if user.is_staff:
+                return redirect('admin_panel:products')
+            return redirect('accounts:my_designs')
         else:
             messages.error(request, "Tên đăng nhập, email hoặc mật khẩu không chính xác.")
 
-    return render(request, 'accounts/login.html')
+    return render(request, 'accounts/login.html', {'next_url': next_url})
 
 
 def register_view(request):

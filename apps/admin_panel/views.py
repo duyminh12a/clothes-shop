@@ -11,14 +11,19 @@ from cms.models import Banner, Review, ContactMessage
 from accounts.models import User
 from decimal import Decimal
 import json
+from functools import wraps
 
 def staff_required(view_func):
     """Yêu cầu người dùng là nhân viên quản trị (is_staff)"""
-    decorated_view_func = user_passes_test(
-        lambda u: u.is_authenticated and u.is_staff,
-        login_url='/tai-khoan/dang-nhap/'
-    )(view_func)
-    return decorated_view_func
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"/tai-khoan/dang-nhap/?next={request.get_full_path()}")
+        if not request.user.is_staff:
+            messages.error(request, "Tài khoản của bạn không có quyền truy cập trang quản trị Nếp Form.")
+            return redirect('accounts:my_designs')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 
 @staff_required
@@ -104,6 +109,9 @@ def order_detail_view(request, order_code):
 @staff_required
 def product_list_view(request):
     """Quản lý sản phẩm & biến thể: tìm kiếm, lọc danh mục, chỉnh sửa, xóa"""
+    if request.method == 'POST':
+        return redirect('admin_panel:products')
+
     q = request.GET.get('q', '').strip()
     type_slug = request.GET.get('type', '').strip()
     status = request.GET.get('status', '').strip()

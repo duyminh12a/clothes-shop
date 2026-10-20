@@ -241,7 +241,7 @@
   </div>
 
   <!-- Modal xác nhận xóa sản phẩm -->
-  <div x-show="showDeleteModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+  <div x-show="showDeleteModal" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
     <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 space-y-4" @click.away="showDeleteModal = false">
       <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center mx-auto">
         <i data-lucide="alert-triangle" class="w-6 h-6"></i>
@@ -254,7 +254,7 @@
         </p>
       </div>
 
-      <form :action="'/quan-tri/san-pham/' + deletingId + '/xoa/'" method="POST" class="flex items-center justify-center gap-3 pt-3">
+      <form id="deleteProductForm" :action="'/quan-tri/san-pham/' + deletingId + '/xoa/'" method="POST" class="flex items-center justify-center gap-3 pt-3">
         {% csrf_token %}
         <button type="button" @click="showDeleteModal = false" class="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition">
           Hủy bỏ
@@ -279,6 +279,10 @@ function productManager() {
       this.deletingId = id;
       this.deletingName = name;
       this.showDeleteModal = true;
+      const form = document.getElementById('deleteProductForm');
+      if (form) {
+        form.action = `/quan-tri/san-pham/${id}/xoa/`;
+      }
     },
 
     toggleActive(productId, event) {

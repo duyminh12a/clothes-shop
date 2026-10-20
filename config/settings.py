@@ -141,6 +141,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Session Engine: dùng signed_cookies để giữ phiên đăng nhập vĩnh viễn trên Serverless Vercel và Local
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 86400 * 30
+SESSION_COOKIE_NAME = 'nepform_session'
+
 # Internationalization
 LANGUAGE_CODE = 'vi'
 TIME_ZONE = 'Asia/Ho_Chi_Minh'

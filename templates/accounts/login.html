@@ -16,6 +16,9 @@
 
     <form method="POST" class="space-y-4">
       {% csrf_token %}
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}">
+      {% endif %}
       <div>
         <label class="block text-[11px] font-semibold text-nep-dark uppercase tracking-wider mb-1.5">Tên đăng nhập hoặc Email</label>
         <input type="text" name="identifier" required placeholder="name@example.com hoặc username" class="w-full bg-nep-creamLight border border-nep-grayLight rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green">
