@@ -9,19 +9,20 @@ def home_view(request):
     """Trang chủ Nếp Form chuẩn theo hình mẫu thiết kế"""
     banner = Banner.objects.filter(is_active=True).first()
     
-    # 8 sản phẩm chuẩn theo ảnh thiết kế
-    eight_slugs = [
-        'ao-thun-kem-co-tron',
-        'ao-thun-den-basic',
-        'so-mi-kem-tay-ngan',
-        'hoodie-be-vai-roi',
-        'ao-khoac-denim-cham',
-        'quan-dai-olive-ong-rong',
-        'quan-short-be-day-rut',
-        'ao-khoac-den-khoa-keo'
-    ]
-    prod_dict = {p.slug: p for p in Product.objects.filter(slug__in=eight_slugs, is_active=True).select_related('product_type')}
-    featured_products = [prod_dict[s] for s in eight_slugs if s in prod_dict]
+    # Lấy 8 sản phẩm may sẵn nổi bật từ catalog
+    featured_products = list(Product.objects.filter(
+        is_active=True, 
+        is_featured=True, 
+        product_type__is_studio_form=False
+    ).select_related('product_type').order_by('product_type__display_order', 'id')[:8])
+    
+    if len(featured_products) < 8:
+        existing_ids = [p.id for p in featured_products]
+        additional = list(Product.objects.filter(
+            is_active=True,
+            product_type__is_studio_form=False
+        ).exclude(id__in=existing_ids).select_related('product_type').order_by('product_type__display_order', 'id')[:8 - len(featured_products)])
+        featured_products.extend(additional)
     
     featured_templates = DesignTemplate.objects.filter(is_featured=True).order_by('id')[:3]
     reviews = Review.objects.filter(is_approved=True)[:4]
@@ -29,7 +30,7 @@ def home_view(request):
     tiers = MembershipTier.objects.all().order_by('min_points')
     
     # Sản phẩm mặc định cho studio widget trang chủ
-    default_product = Product.objects.filter(slug="ao-custom-classic").first() or Product.objects.first()
+    default_product = Product.objects.filter(slug="ao-custom-classic").first() or Product.objects.filter(product_type__is_studio_form=True).first() or Product.objects.first()
     colors = Color.objects.all()[:4]
 
     return render(request, 'home/index.html', {

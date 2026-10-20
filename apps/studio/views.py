@@ -10,8 +10,8 @@ from django.core.files.base import ContentFile
 
 def studio_view(request):
     """Trang công cụ thiết kế áo Nếp Studio"""
-    product_types = ProductType.objects.filter(is_active=True).exclude(slug='tui-canvas-tote').prefetch_related('products', 'print_zones').order_by('display_order')
-    default_product = Product.objects.filter(is_active=True, slug='ao-custom-classic').first() or Product.objects.filter(is_active=True).first()
+    product_types = ProductType.objects.filter(is_active=True, is_studio_form=True).exclude(slug='tui-canvas-tote').prefetch_related('products', 'print_zones').order_by('display_order')
+    default_product = Product.objects.filter(slug='ao-custom-classic').first() or Product.objects.filter(product_type__is_studio_form=True).first()
     
     colors = Color.objects.all().order_by('display_order')
     sizes = Size.objects.all().order_by('display_order')
@@ -19,7 +19,7 @@ def studio_view(request):
     # Chuẩn bị danh sách forms data chi tiết cho JavaScript
     forms_list = []
     for pt in product_types:
-        prod = pt.products.filter(is_active=True).first()
+        prod = pt.products.first()
         if prod:
             pz_list = []
             for pz in pt.print_zones.all().order_by('display_order'):

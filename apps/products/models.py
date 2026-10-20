@@ -7,6 +7,7 @@ class ProductType(TimeStampedModel):
     slug = models.SlugField(max_length=120, unique=True, blank=True)
     description = models.TextField(blank=True, verbose_name="Mô tả")
     display_order = models.PositiveIntegerField(default=0, verbose_name="Thứ tự hiển thị")
+    is_studio_form = models.BooleanField(default=False, verbose_name="Phôi dùng cho Studio")
     is_active = models.BooleanField(default=True, verbose_name="Kích hoạt")
 
     def save(self, *args, **kwargs):

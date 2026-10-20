@@ -14,26 +14,15 @@ def catalog_view(request):
         templates = templates.filter(category__slug=category_slug)
         
     categories = TemplateCategory.objects.all()
-    products_qs = Product.objects.filter(is_active=True).select_related('product_type')
+    
+    # Chỉ lấy các sản phẩm may sẵn (loại trừ các phôi nội bộ dùng riêng cho Studio)
+    products_qs = Product.objects.filter(is_active=True, product_type__is_studio_form=False).select_related('product_type')
     if type_slug:
-        products = list(products_qs.filter(product_type__slug=type_slug))
+        products = list(products_qs.filter(product_type__slug=type_slug).order_by('-is_featured', 'id'))
     else:
-        eight_slugs = [
-            'ao-thun-kem-co-tron',
-            'ao-thun-den-basic',
-            'so-mi-kem-tay-ngan',
-            'hoodie-be-vai-roi',
-            'ao-khoac-denim-cham',
-            'quan-dai-olive-ong-rong',
-            'quan-short-be-day-rut',
-            'ao-khoac-den-khoa-keo'
-        ]
-        prod_dict = {p.slug: p for p in products_qs if p.slug in eight_slugs}
-        ordered = [prod_dict[s] for s in eight_slugs if s in prod_dict]
-        others = [p for p in products_qs if p.slug not in eight_slugs]
-        products = ordered + others
+        products = list(products_qs.order_by('product_type__display_order', '-is_featured', 'id'))
         
-    product_types = ProductType.objects.filter(is_active=True).order_by('display_order')
+    product_types = ProductType.objects.filter(is_active=True, is_studio_form=False, products__is_active=True).distinct().order_by('display_order')
 
     return render(request, 'products/catalog.html', {
         'templates': templates,
