@@ -6,6 +6,8 @@ __pycache__/
 .env
 db.sqlite3-journal
 media/designs/
+media/products/
+media/
 scratch/
 test_out.txt
 .vercel/

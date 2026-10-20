@@ -61,19 +61,19 @@ class Product(TimeStampedModel):
     description = models.TextField(blank=True, verbose_name="Mô tả sản phẩm")
     badge = models.CharField(max_length=50, blank=True, verbose_name="Huy hiệu (VD: Mới)")
     color_hex = models.CharField(max_length=20, blank=True, default="#F5F0E8", verbose_name="Mã màu đại diện")
-    thumbnail_url = models.CharField(max_length=500, blank=True, verbose_name="Ảnh đại diện trực tiếp")
+    thumbnail_url = models.TextField(blank=True, verbose_name="Ảnh đại diện trực tiếp hoặc Data URL")
     thumbnail_image = models.ImageField(upload_to="products/", blank=True, null=True, verbose_name="Hoặc tải file ảnh lên")
     is_featured = models.BooleanField(default=False, verbose_name="Nổi bật trang chủ")
     is_active = models.BooleanField(default=True, verbose_name="Đang bán")
 
     def get_main_image(self):
+        if self.thumbnail_url:
+            return self.thumbnail_url
         if self.thumbnail_image:
             try:
                 return self.thumbnail_image.url
             except Exception:
                 pass
-        if self.thumbnail_url:
-            return self.thumbnail_url
         img = self.images.filter(is_front=True).first() or self.images.first()
         if img:
             return img.get_image_url()

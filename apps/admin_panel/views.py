@@ -159,6 +159,45 @@ def product_list_view(request):
     })
 
 
+def process_uploaded_image(file):
+    """
+    Xử lý file ảnh tải lên: nén, cân đối kích thước và chuyển đổi thành
+    Base64 Data URL để lưu trực tiếp an toàn vào Database mà không cần ghi file vật lý.
+    Hoạt động 100% tin cậy trên cả Vercel Serverless (Read-only filesystem) và Local.
+    """
+    try:
+        from PIL import Image
+        import io
+        import base64
+
+        img = Image.open(file)
+        has_transparency = img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info)
+
+        # Giới hạn kích thước tối đa 1000px để tối ưu dung lượng
+        max_dimension = 1000
+        if max(img.size) > max_dimension:
+            img.thumbnail((max_dimension, max_dimension), Image.Resampling.LANCZOS)
+
+        buffer = io.BytesIO()
+        if has_transparency:
+            img.save(buffer, format='PNG', optimize=True)
+            mime = 'image/png'
+        else:
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img.save(buffer, format='JPEG', quality=85, optimize=True)
+            mime = 'image/jpeg'
+
+        b64_str = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return f"data:{mime};base64,{b64_str}"
+    except Exception:
+        import base64
+        file.seek(0)
+        b64_str = base64.b64encode(file.read()).decode('utf-8')
+        mime = getattr(file, 'content_type', 'image/jpeg') or 'image/jpeg'
+        return f"data:{mime};base64,{b64_str}"
+
+
 @staff_required
 def product_create_view(request):
     """Thêm sản phẩm mới vào danh mục Trang phục & Phôi may sẵn"""
@@ -179,6 +218,10 @@ def product_create_view(request):
         is_featured = 'is_featured' in request.POST
         is_active = 'is_active' in request.POST
 
+        # Nếu người dùng tải ảnh từ máy lên, chuyển thành Data URL an toàn
+        if 'thumbnail_image' in request.FILES and request.FILES['thumbnail_image']:
+            thumbnail_url = process_uploaded_image(request.FILES['thumbnail_image'])
+
         ptype = get_object_or_404(ProductType, id=product_type_id)
         product = Product(
             name=name,
@@ -193,10 +236,6 @@ def product_create_view(request):
             is_featured=is_featured,
             is_active=is_active,
         )
-
-        if 'thumbnail_image' in request.FILES:
-            product.thumbnail_image = request.FILES['thumbnail_image']
-
         product.save()
 
         # Tự động tạo biến thể mặc định cho các size
@@ -235,15 +274,21 @@ def product_edit_view(request, product_id):
         product.base_price = Decimal(request.POST.get('base_price', product.base_price))
         product.badge = request.POST.get('badge', '').strip()
         product.color_hex = request.POST.get('color_hex', product.color_hex).strip()
-        product.thumbnail_url = request.POST.get('thumbnail_url', '').strip()
+        
+        # Nếu tải ảnh mới lên từ máy tính -> nén sang Base64 Data URL an toàn
+        if 'thumbnail_image' in request.FILES and request.FILES['thumbnail_image']:
+            product.thumbnail_url = process_uploaded_image(request.FILES['thumbnail_image'])
+        else:
+            # Ngược lại dùng URL người dùng nhập
+            new_url = request.POST.get('thumbnail_url', '').strip()
+            if new_url:
+                product.thumbnail_url = new_url
+
         product.fabric_info = request.POST.get('fabric_info', '').strip()
         product.fit_type = request.POST.get('fit_type', '').strip()
         product.description = request.POST.get('description', '').strip()
         product.is_featured = 'is_featured' in request.POST
         product.is_active = 'is_active' in request.POST
-
-        if 'thumbnail_image' in request.FILES:
-            product.thumbnail_image = request.FILES['thumbnail_image']
 
         product.save()
 
