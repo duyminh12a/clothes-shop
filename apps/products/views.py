@@ -34,7 +34,13 @@ def product_detail_view(request, slug):
     """Trang chi tiết sản phẩm đơn"""
     product = get_object_or_404(Product, slug=slug, is_active=True)
     colors = Color.objects.filter(productvariant__product=product).distinct()
+    if not colors.exists():
+        colors = Color.objects.all().order_by('display_order')[:5]
+
     sizes = Size.objects.filter(productvariant__product=product).distinct()
+    if not sizes.exists():
+        sizes = Size.objects.all().order_by('display_order')[:5]
+
     print_zones = PrintZone.objects.filter(product_type=product.product_type)
     
     # Lấy tồn kho mẫu

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Nếp Form{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" x-data="{
+    selectedColor: '{{ colors.0.id }}',
+    selectedSize: '{{ sizes.0.name|default:'M' }}',
+    quantity: 1,
+    adding: false,
+    addedMessage: false
+}">
+
+  <!-- Breadcrumbs -->
+  <nav class="flex items-center gap-2 text-xs text-nep-gray mb-8">
+    <a href="{% url 'core:home' %}" class="hover:text-nep-dark transition">Trang chủ</a>
+    <span>/</span>
+    <a href="{% url 'products:catalog' %}" class="hover:text-nep-dark transition">Mẫu có sẵn</a>
+    <span>/</span>
+    <span class="text-nep-dark font-semibold">{{ product.name }}</span>
+  </nav>
+
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-14 items-start">
+    
+    <!-- Left: Product Image -->
+    <div class="md:col-span-6 lg:col-span-6">
+      <div class="aspect-4/3 sm:aspect-square bg-[#F6F4F0] rounded-3xl p-8 sm:p-12 relative flex items-center justify-center border border-nep-grayLight shadow-xs">
+        {% if product.badge %}
+          <span class="absolute top-4 left-4 bg-white text-nep-dark text-xs font-bold px-3 py-1 rounded-full shadow-xs border border-nep-grayLight/40">
+            {{ product.badge }}
+          </span>
+        {% endif %}
+        
+        <img src="{{ product.get_main_image }}" alt="{{ product.name }}" class="max-h-full max-w-full object-contain drop-shadow-md">
+      </div>
+      
+      <!-- Trust badges under photo -->
+      <div class="grid grid-cols-3 gap-3 mt-4 text-center">
+        <div class="bg-white p-3 rounded-2xl border border-nep-grayLight/60">
+          <i data-lucide="shield-check" class="w-4 h-4 mx-auto mb-1 text-nep-green"></i>
+          <span class="text-[10px] font-bold text-nep-dark block">Cotton 100%</span>
+          <span class="text-[9px] text-nep-gray">Đanh mịn, bền form</span>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-nep-grayLight/60">
+          <i data-lucide="refresh-cw" class="w-4 h-4 mx-auto mb-1 text-nep-green"></i>
+          <span class="text-[10px] font-bold text-nep-dark block">Đổi size 7 ngày</span>
+          <span class="text-[9px] text-nep-gray">Hỗ trợ tận nơi</span>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-nep-grayLight/60">
+          <i data-lucide="truck" class="w-4 h-4 mx-auto mb-1 text-nep-green"></i>
+          <span class="text-[10px] font-bold text-nep-dark block">Giao hỏa tốc</span>
+          <span class="text-[9px] text-nep-gray">Đóng gói chuẩn hộp</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Product Information & Purchase -->
+    <div class="md:col-span-6 lg:col-span-6 space-y-6">
+      <div>
+        <span class="text-xs font-bold text-nep-greenMuted uppercase tracking-wider block mb-1">{{ product.product_type.name }}</span>
+        <h1 class="text-3xl sm:text-4xl font-serif font-bold text-nep-dark tracking-tight">{{ product.name }}</h1>
+        <div class="mt-3 flex items-baseline gap-3">
+          <span class="text-2xl font-bold text-nep-dark">{{ product.base_price|floatformat:0 }}₫</span>
+          <span class="text-xs text-nep-gray">Đã bao gồm thuế GTGT</span>
+        </div>
+      </div>
+
+      <!-- Description / Specs -->
+      <div class="p-4 bg-nep-creamLight rounded-2xl border border-nep-grayLight/70 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-nep-gray font-medium">Chất liệu:</span>
+          <span class="text-nep-dark font-semibold">{{ product.fabric_info }}</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-nep-gray font-medium">Phom dáng:</span>
+          <span class="text-nep-dark font-semibold">{{ product.fit_type }}</span>
+        </div>
+      </div>
+
+      <!-- Colors -->
+      {% if colors %}
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-nep-dark block">Chọn màu sắc:</label>
+          <div class="flex items-center gap-3">
+            {% for c in colors %}
+              <button type="button" @click="selectedColor = '{{ c.id }}'" :class="selectedColor == '{{ c.id }}' ? 'ring-2 ring-nep-dark ring-offset-2' : ''" class="w-7 h-7 rounded-full border border-black/20 flex items-center justify-center transition shadow-xs" style="background-color: {{ c.hex_code }};" title="{{ c.name }}">
+                <i x-show="selectedColor == '{{ c.id }}'" data-lucide="check" class="w-3.5 h-3.5 {% if c.hex_code == '#FFFFFF' or c.hex_code == '#F5F0E8' %}text-nep-dark{% else %}text-white{% endif %}"></i>
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Sizes -->
+      {% if sizes %}
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-nep-dark">Chọn kích cỡ (Size):</label>
+            <button type="button" @click="$dispatch('open-size-modal')" class="text-xs font-semibold text-nep-green hover:underline flex items-center gap-1">
+              <i data-lucide="ruler" class="w-3 h-3"></i> <span>Tư vấn chọn size</span>
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            {% for s in sizes %}
+              <button type="button" @click="selectedSize = '{{ s.name }}'" :class="selectedSize === '{{ s.name }}' ? 'bg-nep-dark text-white' : 'bg-white hover:bg-nep-cream text-nep-dark border border-nep-grayLight'" class="w-12 h-10 rounded-xl text-xs font-bold transition flex items-center justify-center">
+                {{ s.name }}
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Quantity & CTAs -->
+      <div class="pt-4 border-t border-nep-grayLight space-y-3">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center bg-white border border-nep-grayLight rounded-full p-1">
+            <button type="button" @click="if (quantity > 1) quantity--" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-nep-cream text-nep-dark transition font-bold text-sm">-</button>
+            <span class="w-10 text-center font-bold text-xs" x-text="quantity"></span>
+            <button type="button" @click="quantity++" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-nep-cream text-nep-dark transition font-bold text-sm">+</button>
+          </div>
+
+          <button type="button" @click="
+            adding = true;
+            fetch('{% url 'cart:api_add' %}', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+              body: JSON.stringify({ product_id: {{ product.id }}, color_id: selectedColor, size_name: selectedSize, quantity: quantity })
+            }).then(r => r.json()).then(data => {
+              adding = false;
+              addedMessage = true;
+              setTimeout(() => addedMessage = false, 3000);
+            }).catch(() => { adding = false; });
+          " class="flex-grow bg-nep-dark hover:bg-nep-darkSoft text-white py-3 px-6 rounded-full font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <span x-show="!adding">Thêm vào giỏ hàng</span>
+            <span x-show="adding">Đang thêm...</span>
+          </button>
+        </div>
+
+        <div x-show="addedMessage" x-cloak class="p-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+          <span>Đã thêm {{ product.name }} vào giỏ hàng!</span>
+        </div>
+
+        <!-- Studio Customization Link -->
+        <a href="{% url 'studio:index' %}" class="w-full bg-nep-cream hover:bg-white text-nep-dark border border-nep-grayLight py-3 px-6 rounded-full font-bold text-xs transition flex items-center justify-center gap-2 shadow-2xs">
+          <i data-lucide="palette" class="w-4 h-4 text-nep-green"></i>
+          <span>Tự in hình / câu chữ riêng lên phôi áo này trong Studio</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

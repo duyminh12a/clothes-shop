@@ -8,8 +8,9 @@ from loyalty.models import MembershipTier
 def home_view(request):
     """Trang chủ Nếp Form chuẩn theo hình mẫu thiết kế"""
     banner = Banner.objects.filter(is_active=True).first()
-    featured_products = Product.objects.filter(is_active=True, is_featured=True)[:4]
-    featured_templates = DesignTemplate.objects.filter(is_featured=True)[:6]
+    # 8 sản phẩm may sẵn theo thiết kế
+    featured_products = Product.objects.filter(is_active=True, is_featured=True).order_by('id')[:8]
+    featured_templates = DesignTemplate.objects.filter(is_featured=True).order_by('id')[:3]
     reviews = Review.objects.filter(is_approved=True)[:4]
     faqs = FAQ.objects.filter(is_active=True)[:4]
     tiers = MembershipTier.objects.all().order_by('min_points')
