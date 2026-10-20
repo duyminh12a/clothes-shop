@@ -103,62 +103,180 @@ def order_detail_view(request, order_code):
 
 @staff_required
 def product_list_view(request):
-    """Quản lý sản phẩm & biến thể màu / size / tồn kho"""
-    products = Product.objects.select_related('product_type').prefetch_related('variants__color', 'variants__size').all().order_by('-created_at')
-    
+    """Quản lý sản phẩm & biến thể: tìm kiếm, lọc danh mục, chỉnh sửa, xóa"""
+    q = request.GET.get('q', '').strip()
+    type_slug = request.GET.get('type', '').strip()
+    status = request.GET.get('status', '').strip()
+
+    products_qs = Product.objects.select_related('product_type').prefetch_related('variants__color', 'variants__size').all()
+
+    if q:
+        products_qs = products_qs.filter(
+            Q(name__icontains=q) |
+            Q(fabric_info__icontains=q) |
+            Q(fit_type__icontains=q) |
+            Q(badge__icontains=q) |
+            Q(description__icontains=q)
+        )
+
+    if type_slug:
+        products_qs = products_qs.filter(product_type__slug=type_slug)
+
+    if status == 'active':
+        products_qs = products_qs.filter(is_active=True)
+    elif status == 'inactive':
+        products_qs = products_qs.filter(is_active=False)
+
+    products = products_qs.order_by('-is_featured', 'product_type__display_order', '-created_at')
+
+    # Thống kê nhanh số lượng
+    total_count = Product.objects.count()
+    active_count = Product.objects.filter(is_active=True).count()
+    inactive_count = Product.objects.filter(is_active=False).count()
+    featured_count = Product.objects.filter(is_featured=True).count()
+
+    product_types = ProductType.objects.filter(is_active=True).order_by('display_order')
+
     return render(request, 'admin_panel/products.html', {
         'products': products,
+        'product_types': product_types,
+        'current_q': q,
+        'current_type': type_slug,
+        'current_status': status,
+        'total_count': total_count,
+        'active_count': active_count,
+        'inactive_count': inactive_count,
+        'featured_count': featured_count,
         'active_menu': 'products',
     })
 
 
 @staff_required
 def product_create_view(request):
-    """Thêm sản phẩm áo mới"""
-    product_types = ProductType.objects.filter(is_active=True)
-    colors = Color.objects.all()
-    sizes = Size.objects.all()
+    """Thêm sản phẩm mới vào danh mục Trang phục & Phôi may sẵn"""
+    product_types = ProductType.objects.filter(is_active=True).order_by('display_order')
+    colors = Color.objects.all().order_by('display_order')
+    sizes = Size.objects.all().order_by('display_order')
 
     if request.method == 'POST':
-        name = request.POST.get('name')
+        name = request.POST.get('name', '').strip()
         product_type_id = request.POST.get('product_type')
-        base_price = request.POST.get('base_price', 250000)
-        fabric_info = request.POST.get('fabric_info', 'Cotton 100% (240gsm)')
-        fit_type = request.POST.get('fit_type', 'Phối unisex')
-        description = request.POST.get('description', '')
+        base_price = Decimal(request.POST.get('base_price', 250000))
+        badge = request.POST.get('badge', '').strip()
+        color_hex = request.POST.get('color_hex', '#F5F0E8').strip()
+        thumbnail_url = request.POST.get('thumbnail_url', '').strip()
+        fabric_info = request.POST.get('fabric_info', 'Cotton 100% (240gsm)').strip()
+        fit_type = request.POST.get('fit_type', 'Phối unisex').strip()
+        description = request.POST.get('description', '').strip()
         is_featured = 'is_featured' in request.POST
+        is_active = 'is_active' in request.POST
 
         ptype = get_object_or_404(ProductType, id=product_type_id)
-        product = Product.objects.create(
+        product = Product(
             name=name,
             product_type=ptype,
-            base_price=Decimal(base_price),
+            base_price=base_price,
+            badge=badge,
+            color_hex=color_hex,
+            thumbnail_url=thumbnail_url,
             fabric_info=fabric_info,
             fit_type=fit_type,
             description=description,
             is_featured=is_featured,
-            is_active=True
+            is_active=is_active,
         )
 
-        # Tự động tạo biến thể cho các màu và size
-        for c in colors:
-            for s in sizes:
-                ProductVariant.objects.create(
-                    product=product,
-                    color=c,
-                    size=s,
-                    stock_quantity=30
-                )
+        if 'thumbnail_image' in request.FILES:
+            product.thumbnail_image = request.FILES['thumbnail_image']
 
-        messages.success(request, f"Đã thêm sản phẩm '{product.name}' kèm các biến thể thành công!")
+        product.save()
+
+        # Tự động tạo biến thể mặc định cho các size
+        default_color = Color.objects.filter(hex_code__iexact=color_hex).first() or Color.objects.first()
+        for s in sizes:
+            ProductVariant.objects.get_or_create(
+                product=product,
+                color=default_color,
+                size=s,
+                defaults={'stock_quantity': 30}
+            )
+
+        messages.success(request, f"Đã thêm sản phẩm '{product.name}' thành công!")
         return redirect('admin_panel:products')
 
     return render(request, 'admin_panel/product_form.html', {
         'product_types': product_types,
         'colors': colors,
         'sizes': sizes,
+        'is_edit': False,
         'active_menu': 'products',
     })
+
+
+@staff_required
+def product_edit_view(request, product_id):
+    """Chỉnh sửa thông tin sản phẩm: hình ảnh, giá, mô tả, chất liệu, huy hiệu, trạng thái"""
+    product = get_object_or_404(Product, id=product_id)
+    product_types = ProductType.objects.filter(is_active=True).order_by('display_order')
+
+    if request.method == 'POST':
+        product.name = request.POST.get('name', '').strip()
+        product_type_id = request.POST.get('product_type')
+        if product_type_id:
+            product.product_type = get_object_or_404(ProductType, id=product_type_id)
+        product.base_price = Decimal(request.POST.get('base_price', product.base_price))
+        product.badge = request.POST.get('badge', '').strip()
+        product.color_hex = request.POST.get('color_hex', product.color_hex).strip()
+        product.thumbnail_url = request.POST.get('thumbnail_url', '').strip()
+        product.fabric_info = request.POST.get('fabric_info', '').strip()
+        product.fit_type = request.POST.get('fit_type', '').strip()
+        product.description = request.POST.get('description', '').strip()
+        product.is_featured = 'is_featured' in request.POST
+        product.is_active = 'is_active' in request.POST
+
+        if 'thumbnail_image' in request.FILES:
+            product.thumbnail_image = request.FILES['thumbnail_image']
+
+        product.save()
+
+        messages.success(request, f"Đã cập nhật sản phẩm '{product.name}' thành công!")
+        return redirect('admin_panel:products')
+
+    return render(request, 'admin_panel/product_form.html', {
+        'product': product,
+        'product_types': product_types,
+        'is_edit': True,
+        'active_menu': 'products',
+    })
+
+
+@staff_required
+def product_delete_view(request, product_id):
+    """Xóa sản phẩm khỏi hệ thống"""
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == 'POST':
+        product_name = product.name
+        product.delete()
+        messages.success(request, f"Đã xóa sản phẩm '{product_name}' thành công!")
+        return redirect('admin_panel:products')
+
+    return redirect('admin_panel:products')
+
+
+@staff_required
+def product_toggle_active_api(request, product_id):
+    """Bật/tắt trạng thái hiển thị (Đang bán / Đã ẩn) nhanh qua AJAX"""
+    if request.method == 'POST':
+        product = get_object_or_404(Product, id=product_id)
+        product.is_active = not product.is_active
+        product.save(update_fields=['is_active'])
+        return JsonResponse({
+            'status': 'success',
+            'is_active': product.is_active,
+            'message': f"Đã {'hiện' if product.is_active else 'ẩn'} sản phẩm '{product.name}'"
+        })
+    return JsonResponse({'error': 'Invalid method'}, status=405)
 
 
 @staff_required

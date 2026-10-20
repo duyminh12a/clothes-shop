@@ -1,73 +1,225 @@
 {% extends 'admin_panel/base_admin.html' %}
 
-{% block title %}Thêm Sản Phẩm Mới — Quản Trị Nếp Form{% endblock %}
-{% block header_title %}Thêm Phôi Áo Mới Vào Xưởng{% endblock %}
+{% block title %}{% if is_edit %}Chỉnh sửa: {{ product.name }}{% else %}Thêm Sản Phẩm Mới{% endif %} — Quản Trị Nếp Form{% endblock %}
+{% block header_title %}{% if is_edit %}Chỉnh Sửa Thông Tin Sản Phẩm{% else %}Thêm Mới Sản Phẩm Vào Cửa Hàng{% endif %}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl space-y-6">
+<div class="max-w-5xl space-y-6" x-data="productForm({
+    currentImageUrl: '{% if is_edit %}{{ product.get_main_image }}{% else %}/static/images/mockups/tshirt_front_cream.png{% endif %}',
+    colorHex: '{% if is_edit %}{{ product.color_hex|default:"#F5F0E8" }}{% else %}#F5F0E8{% endif %}',
+    thumbnailUrl: '{% if is_edit %}{{ product.thumbnail_url }}{% else %}{% endif %}'
+})">
   
-  <div class="flex items-center gap-3">
-    <a href="{% url 'admin_panel:products' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-900 transition">
+  <!-- Back Button & Breadcrumbs -->
+  <div class="flex items-center justify-between">
+    <a href="{% url 'admin_panel:products' %}" class="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition bg-white px-4 py-2 rounded-xl border border-gray-200/80 shadow-2xs">
       <i data-lucide="arrow-left" class="w-4 h-4"></i>
       <span>Quay lại danh sách sản phẩm</span>
     </a>
+
+    {% if is_edit %}
+      <a href="{% url 'products:detail' product.slug %}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-semibold text-nep-green hover:underline">
+        <span>Xem giao diện khách hàng</span>
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+      </a>
+    {% endif %}
   </div>
 
-  <div class="bg-white rounded-3xl p-8 border border-gray-200/80 shadow-xs">
-    <form method="POST" class="space-y-6">
-      {% csrf_token %}
+  <!-- Main Form Card -->
+  <form method="POST" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
 
-      <div>
-        <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Tên sản phẩm *</label>
-        <input type="text" name="name" required placeholder="VD: Áo Thun Cổ Tròn Loose Fit" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-nep-green text-gray-800">
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Loại sản phẩm *</label>
-          <select name="product_type" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-nep-green text-gray-800">
-            {% for t in product_types %}
-              <option value="{{ t.id }}">{{ t.name }}</option>
-            {% endfor %}
-          </select>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- Left Column: Product Information (7 cols) -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-5">
+        
+        <div class="border-b border-gray-100 pb-4">
+          <h3 class="text-base font-bold text-gray-900">
+            {% if is_edit %}Chỉnh sửa chi tiết sản phẩm{% else %}Thông tin sản phẩm mới{% endif %}
+          </h3>
+          <p class="text-xs text-gray-500 mt-0.5">Điền đầy đủ thông tin để sản phẩm hiển thị chuẩn xác trên website.</p>
         </div>
 
+        <!-- Name -->
         <div>
-          <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Giá cơ bản (VNĐ) *</label>
-          <input type="number" name="base_price" required value="280000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-nep-green text-gray-800">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Chất liệu vải</label>
-          <input type="text" name="fabric_info" value="Cotton 100% 2-chiều (240gsm)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-nep-green text-gray-800">
+          <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Tên sản phẩm *</label>
+          <input type="text" name="name" required value="{% if is_edit %}{{ product.name }}{% endif %}" placeholder="VD: Áo thun Heavyweight 100% Cotton" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 transition">
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Phom dáng</label>
-          <input type="text" name="fit_type" value="Phối unisex" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-nep-green text-gray-800">
+        <!-- Category & Price -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Loại sản phẩm / Danh mục *</label>
+            <select name="product_type" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 transition">
+              {% for t in product_types %}
+                <option value="{{ t.id }}" {% if is_edit and product.product_type_id == t.id %}selected{% endif %}>
+                  {{ t.name }} {% if t.is_studio_form %}(Phôi Studio){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Giá niêm yết (VNĐ) *</label>
+            <input type="number" name="base_price" required value="{% if is_edit %}{{ product.base_price|floatformat:0 }}{% else %}250000{% endif %}" step="1000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 font-mono transition">
+          </div>
         </div>
+
+        <!-- Badge & Color Swatch -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Huy hiệu (Badge)</label>
+            <div class="relative">
+              <input type="text" name="badge" value="{% if is_edit %}{{ product.badge }}{% endif %}" list="badge-suggestions" placeholder="Chọn hoặc nhập: Best-seller, Mới, Hot..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 transition">
+              <datalist id="badge-suggestions">
+                <option value="Best-seller">
+                <option value="Mới">
+                <option value="Hot">
+                <option value="Giảm giá">
+                <option value="Limited">
+              </datalist>
+            </div>
+            <span class="text-[10px] text-gray-400 mt-1 block">Hiển thị ở góc trên thẻ sản phẩm.</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Màu sắc đại diện (HEX)</label>
+            <div class="flex items-center gap-2">
+              <input type="color" x-model="colorHex" class="w-10 h-10 rounded-xl border border-gray-200 cursor-pointer p-0.5 bg-white">
+              <input type="text" name="color_hex" x-model="colorHex" placeholder="#F5F0E8" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-mono font-bold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 uppercase transition">
+            </div>
+            <span class="text-[10px] text-gray-400 mt-1 block">Chấm màu nhận diện trên thẻ catalog.</span>
+          </div>
+        </div>
+
+        <!-- Fabric info & Fit type -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Chất liệu vải</label>
+            <input type="text" name="fabric_info" value="{% if is_edit %}{{ product.fabric_info }}{% else %}100% Cotton 240gsm đanh mịn không xù{% endif %}" placeholder="VD: 100% Cotton 240gsm đanh mịn" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Phom dáng (Fit)</label>
+            <input type="text" name="fit_type" value="{% if is_edit %}{{ product.fit_type }}{% else %}Regular fit chuẩn form người Việt{% endif %}" placeholder="VD: Oversize vai trễ, Boxy fit..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 transition">
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Mô tả sản phẩm</label>
+          <textarea name="description" rows="3" placeholder="Đặc điểm chi tiết của vải, công nghệ hoàn thiện, gợi ý phối đồ..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-normal focus:outline-none focus:border-nep-green focus:bg-white text-gray-800 transition">{% if is_edit %}{{ product.description }}{% endif %}</textarea>
+        </div>
+
+        <!-- Flags -->
+        <div class="pt-4 border-t border-gray-100 space-y-3">
+          <label class="flex items-center gap-3 cursor-pointer select-none">
+            <input type="checkbox" name="is_featured" {% if not is_edit or product.is_featured %}checked{% endif %} class="w-4 h-4 rounded text-nep-dark accent-nep-dark">
+            <div>
+              <span class="text-xs font-bold text-gray-900 block">Ghim nổi bật trên Trang Chủ</span>
+              <span class="text-[11px] text-gray-400">Xuất hiện trong top 8 sản phẩm ở mục "Sản phẩm sẵn sàng giao" tại trang chủ.</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-3 cursor-pointer select-none">
+            <input type="checkbox" name="is_active" {% if not is_edit or product.is_active %}checked{% endif %} class="w-4 h-4 rounded text-nep-dark accent-nep-dark">
+            <div>
+              <span class="text-xs font-bold text-gray-900 block">Kích hoạt đang bán</span>
+              <span class="text-[11px] text-gray-400">Cho phép hiển thị và đặt mua sản phẩm này trên website.</span>
+            </div>
+          </label>
+        </div>
+
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">Mô tả sản phẩm</label>
-        <textarea name="description" rows="3" placeholder="Đặc điểm nổi bật của chất liệu vải, kiểu may..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-nep-green text-gray-800"></textarea>
+      <!-- Right Column: Image Configuration & Live Preview (5 cols) -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-5">
+          
+          <div class="border-b border-gray-100 pb-3">
+            <h3 class="text-base font-bold text-gray-900">Hình ảnh đại diện sản phẩm</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Khung xem trước trực tiếp theo chuẩn tỷ lệ 4:3</p>
+          </div>
+
+          <!-- Real-time Image Preview Box -->
+          <div class="aspect-4/3 rounded-2xl bg-[#F6F4F0] p-4 relative flex items-center justify-center border border-gray-200 overflow-hidden shadow-2xs">
+            <img :src="currentImageUrl" alt="Xem trước sản phẩm" class="max-h-full max-w-full object-contain transition-all duration-300 drop-shadow-sm" @error="currentImageUrl = '/static/images/mockups/tshirt_front_cream.png'">
+            <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded text-[9px] font-bold text-gray-500 border border-gray-200">
+              Chuẩn 4:3
+            </div>
+          </div>
+
+          <!-- Option 1: File Upload -->
+          <div class="space-y-2 pt-2">
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+              Cách 1: Tải ảnh từ máy tính
+            </label>
+            <input type="file" name="thumbnail_image" accept="image/*" @change="previewFile($event)" class="w-full text-xs text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-nep-creamLight file:text-nep-dark hover:file:bg-nep-grayLight/60 file:cursor-pointer cursor-pointer border border-gray-200 rounded-xl p-1 bg-gray-50">
+            <span class="text-[10px] text-gray-400 block">Hỗ trợ JPG, PNG, WebP. Tỷ lệ tối ưu: 800x600 px.</span>
+          </div>
+
+          <div class="relative flex py-2 items-center">
+            <div class="flex-grow border-t border-gray-200"></div>
+            <span class="flex-shrink mx-3 text-[10px] font-bold uppercase text-gray-400">Hoặc</span>
+            <div class="flex-grow border-t border-gray-200"></div>
+          </div>
+
+          <!-- Option 2: Image URL / Static Path -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider">
+              Cách 2: Nhập link ảnh trực tiếp (URL hoặc static)
+            </label>
+            <input type="text" name="thumbnail_url" x-model="thumbnailUrl" @input="previewUrl()" placeholder="VD: /static/images/products/ao-thun-heavyweight-trang.jpg hoặc https://..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs font-medium focus:outline-none focus:border-nep-green focus:bg-white text-gray-900 transition">
+            <span class="text-[10px] text-gray-400 block">Có thể dán link ảnh từ bất kỳ trang web nào hoặc đường dẫn static.</span>
+          </div>
+
+        </div>
+
+        <!-- Sticky Save Actions -->
+        <div class="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex items-center justify-between gap-4">
+          <a href="{% url 'admin_panel:products' %}" class="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition">
+            Hủy bỏ
+          </a>
+
+          <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-nep-dark hover:bg-gray-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>{% if is_edit %}Lưu thay đổi{% else %}Thêm sản phẩm{% endif %}</span>
+          </button>
+        </div>
+
       </div>
 
-      <div class="flex items-center gap-3">
-        <input type="checkbox" name="is_featured" id="is_featured" checked class="w-4 h-4 accent-nep-dark">
-        <label for="is_featured" class="text-xs font-bold text-gray-800">Hiển thị nổi bật trên Trang Chủ</label>
-      </div>
-
-      <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
-        <a href="{% url 'admin_panel:products' %}" class="px-5 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">Hủy bỏ</a>
-        <button type="submit" class="px-6 py-2.5 bg-nep-dark hover:bg-gray-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs transition">
-          Lưu sản phẩm
-        </button>
-      </div>
-    </form>
-  </div>
+    </div>
+  </form>
 
 </div>
+
+<script>
+function productForm(initData) {
+  return {
+    currentImageUrl: initData.currentImageUrl,
+    colorHex: initData.colorHex,
+    thumbnailUrl: initData.thumbnailUrl,
+
+    previewUrl() {
+      if (this.thumbnailUrl && this.thumbnailUrl.trim() !== '') {
+        this.currentImageUrl = this.thumbnailUrl.trim();
+      }
+    },
+
+    previewFile(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.currentImageUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+}
+</script>
 {% endblock %}
