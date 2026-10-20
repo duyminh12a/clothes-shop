@@ -8,8 +8,21 @@ from loyalty.models import MembershipTier
 def home_view(request):
     """Trang chủ Nếp Form chuẩn theo hình mẫu thiết kế"""
     banner = Banner.objects.filter(is_active=True).first()
-    # 8 sản phẩm may sẵn theo thiết kế
-    featured_products = Product.objects.filter(is_active=True, is_featured=True).order_by('id')[:8]
+    
+    # 8 sản phẩm chuẩn theo ảnh thiết kế
+    eight_slugs = [
+        'ao-thun-kem-co-tron',
+        'ao-thun-den-basic',
+        'so-mi-kem-tay-ngan',
+        'hoodie-be-vai-roi',
+        'ao-khoac-denim-cham',
+        'quan-dai-olive-ong-rong',
+        'quan-short-be-day-rut',
+        'ao-khoac-den-khoa-keo'
+    ]
+    prod_dict = {p.slug: p for p in Product.objects.filter(slug__in=eight_slugs, is_active=True).select_related('product_type')}
+    featured_products = [prod_dict[s] for s in eight_slugs if s in prod_dict]
+    
     featured_templates = DesignTemplate.objects.filter(is_featured=True).order_by('id')[:3]
     reviews = Review.objects.filter(is_approved=True)[:4]
     faqs = FAQ.objects.filter(is_active=True)[:4]
