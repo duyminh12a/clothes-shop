@@ -125,7 +125,10 @@
                 <span class="text-xs font-bold text-nep-gold">{{ user.points_balance }} đ</span>
               </a>
               {% if user.is_staff %}
-                <a href="/admin/" target="_blank" class="block px-4 py-2 text-nep-green font-medium hover:bg-nep-creamLight border-t border-gray-100">Trang Quản Trị</a>
+                <a href="{% url 'admin_panel:products' %}" class="block px-4 py-2 text-nep-green font-semibold hover:bg-nep-creamLight border-t border-gray-100 flex items-center justify-between">
+                  <span>Trang Quản Trị</span>
+                  <span class="text-[9px] bg-nep-green/10 text-nep-green px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Dashboard</span>
+                </a>
               {% endif %}
               <a href="{% url 'accounts:logout' %}" class="block px-4 py-2 text-red-600 hover:bg-red-50 border-t border-gray-100">Đăng xuất</a>
             </div>
