@@ -28,8 +28,11 @@ Nền tảng thiết kế áo thun, polo, hoodie và túi tote tùy biến trự
    - Phân cấp hạng thành viên: Thường ➔ Bạc ➔ Vàng (giảm giá tới 10% trọn đời và Freeship).
    - Mã giới thiệu bạn bè nhận thưởng điểm 2 chiều.
 
-5. **🛠️ Quản Trị Hệ Thống (Django Admin):**
-   - Quản lý sản phẩm, biến thể màu x size, tồn kho, đơn hàng, mã giảm giá, banners và câu hỏi thường gặp.
+5. **🛠️ Quản Trị Hệ Thống Toàn Diện:**
+   - **Quản lý Trang phục & Phôi may sẵn (`/quan-tri/san-pham/`)**: Thêm mới, chỉnh sửa giá tiền, hình ảnh (tải file từ máy hoặc dán link URL với Live Preview 4:3), mô tả, chất liệu, phom dáng, huy hiệu (`Best-seller`, `Mới`, `Hot`), mã màu HEX và xóa sản phẩm an toàn.
+   - **Quản trị đơn hàng & sản xuất**: Quản lý đơn hàng, duyệt trạng thái in ấn, thanh toán, xuất file in.
+   - **Quản lý mã giảm giá, tồn kho biến thể và kho mẫu thiết kế Studio**.
+   - Cung cấp song song cả **Dashboard Quản Trị Riêng (`/quan-tri/`)** và **Django Admin (`/admin/`)**.
 
 ---
 
